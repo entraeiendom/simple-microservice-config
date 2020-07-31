@@ -19,11 +19,6 @@ public class ServiceConfig {
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "default.properties";
     public static final String LOCAL_CONFIG_FILE_NAME = "local_config.properties";
 
-    public static Properties loadTestProperties() {
-        String path = "src/test/resources/" + DEFAULT_PROPERTIES_FILE_NAME;
-        return loadProperties(path);
-    }
-
     public static Properties loadProperties() {
         return loadProperties(DEFAULT_PROPERTIES_FILE_NAME);
     }
@@ -48,14 +43,22 @@ public class ServiceConfig {
             applicationProps.put(key, defaultProps.getProperty((String) key));
         }
 
+        InputStream in = null;
         try {
-            InputStream in = new FileInputStream(LOCAL_CONFIG_FILE_NAME);
-            applicationProps.load(in);
-            in.close();
+            in = new FileInputStream(LOCAL_CONFIG_FILE_NAME);
         } catch (FileNotFoundException e) {
             log.debug("{} was not found.", LOCAL_CONFIG_FILE_NAME);
+            in = ServiceConfig.class.getClassLoader().getResourceAsStream(LOCAL_CONFIG_FILE_NAME);
         } catch (IOException e) {
             log.debug("Failed to read {}. Reason {}", LOCAL_CONFIG_FILE_NAME, e.getMessage());
+        }
+        if (in != null) {
+            try {
+                applicationProps.load(in);
+                in.close();
+            } catch (IOException ioe) {
+                log.debug("Failed to read {}. Reason {}", LOCAL_CONFIG_FILE_NAME, ioe.getMessage());
+            }
         }
         return applicationProps;
     }
