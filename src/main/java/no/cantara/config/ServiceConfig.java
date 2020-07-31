@@ -33,7 +33,7 @@ public class ServiceConfig {
 
         try {
             InputStream in = ServiceConfig.class.getClassLoader().getResourceAsStream(defaultPropertiesFileName);
-            in = new FileInputStream(defaultPropertiesFileName);
+//            in = new FileInputStream(defaultPropertiesFileName);
             defaultProps.load(in);
             in.close();
             log.debug("Loaded {} default properties from {}", defaultProps.size(), defaultPropertiesFileName);

@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.Properties;
 
+import static no.cantara.config.ServiceConfig.getProperty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -18,6 +19,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void getProperty() {
+    public void getPropertyTest() {
+        assertEquals("standard", getProperty("STANDARD_VALUE"));
     }
 }
