@@ -5,7 +5,7 @@
 
   <groupId>no.cantara.config</groupId>
   <artifactId>simple-microservice-config</artifactId>
-  <version>0.4.3-SNAPSHOT</version>
+  <version>0.4.3</version>
   <packaging>jar</packaging>
 
   <developers>
@@ -27,7 +27,7 @@
   <scm>
     <developerConnection>scm:git:ssh://git@github.com/cantara/simple-microservice-config.git</developerConnection>
     <connection>scm:git:https://github.com/cantara/simple-microservice-config.git</connection>
-    <tag>HEAD</tag>
+    <tag>simple-microservice-config-0.4.3</tag>
   </scm>
   <url>https://github.com/Cantara/simple-microservice-config</url>
 
