@@ -23,8 +23,11 @@ public class ApplicationProperties {
 
     public void validate() {
         if(expectedApplicationProperties.isPresent()){
-            final Set<String> propertyNames = this.properties.stringPropertyNames();
-            final List<String> undefinedProperties = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !propertyNames.contains(expectedPropertyName)).collect(Collectors.toList());
+            log.info("*********************");
+            log.info("The application has resolved the following properties");
+            log.info(properties.toString());
+            log.info("*********************");
+            final List<String> undefinedProperties = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(Collectors.toList());
             if(!undefinedProperties.isEmpty()){
                 final String message = "Expected properties is not loaded "+undefinedProperties;
                 log.error(message);
