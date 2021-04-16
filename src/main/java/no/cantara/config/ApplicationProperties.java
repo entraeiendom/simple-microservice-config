@@ -3,10 +3,9 @@ package no.cantara.config;
 import org.slf4j.Logger;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -14,12 +13,21 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class ApplicationProperties {
     private static final Logger log = getLogger(ApplicationProperties.class);
+    private final Map<String, String> envVariables;
     private Properties properties;
     private Optional<ExpectedApplicationProperties> expectedApplicationProperties;
 
     public ApplicationProperties(Properties properties, Optional<ExpectedApplicationProperties> expectedApplicationProperties) {
         this.expectedApplicationProperties = expectedApplicationProperties;
         this.properties = properties;
+        envVariables = Collections.emptyMap();
+    }
+
+
+    public <T> ApplicationProperties(Properties properties, Optional<ExpectedApplicationProperties> expectedApplicationProperties, Map<String, String> envVariables) {
+        this.expectedApplicationProperties = expectedApplicationProperties;
+        this.properties = properties;
+        this.envVariables = envVariables;
     }
 
 
@@ -59,8 +67,13 @@ public class ApplicationProperties {
         return properties.getProperty(name);
     }
 
-    public Properties getProperties() {
-        return properties;
+    public Map<String, String> getMap() {
+        return properties.entrySet().stream().collect(
+                Collectors.toMap(
+                        e -> String.valueOf(e.getKey()),
+                        e -> String.valueOf(e.getValue()),
+                        (prev, next) -> next, HashMap::new
+                ));
     }
 
     public interface Builder {
@@ -72,6 +85,8 @@ public class ApplicationProperties {
         Builder withExpectedProperties(ExpectedApplicationProperties expectedApplicationProperties);
 
         Builder withProperties(Properties properties);
+
+        Builder enableEnvironmentVariables();
 
         Builder withProperty(String key, String value);
 

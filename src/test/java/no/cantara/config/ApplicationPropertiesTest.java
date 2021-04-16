@@ -11,14 +11,13 @@ public class ApplicationPropertiesTest {
 
     @Test
     public void shouldGetPropertiesWithSingleProperty() {
-        final Properties properties = getProperties("base.url", "http-value");
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperty("base.url", "http-value")
                 .build();
         assertThat(applicationProperties.get("base.url")).isEqualTo("http-value");
 
-        assertThat(applicationProperties.getProperties()).isEqualTo(properties);
+        assertThat(applicationProperties.getMap()).containsEntry("base.url", "http-value");
 
     }
 
@@ -33,7 +32,10 @@ public class ApplicationPropertiesTest {
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
 
-        assertThat(applicationProperties.getProperties()).isEqualTo(properties);
+        assertThat(applicationProperties.getMap())
+                .containsEntry("first.key", "first.value")
+                .containsEntry("second.key", "second.value")
+                .hasSize(2);
     }
 
     @Test
@@ -49,7 +51,10 @@ public class ApplicationPropertiesTest {
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
         assertThat(applicationProperties.get("first.property")).isNull();
 
-        assertThat(applicationProperties.getProperties()).isEqualTo(properties);
+        assertThat(applicationProperties.getMap())
+                .containsEntry("first.key", "first.value")
+                .containsEntry("second.key", "second.value")
+                .hasSize(2);
     }
 
     @Test
@@ -65,11 +70,11 @@ public class ApplicationPropertiesTest {
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
         assertThat(applicationProperties.get("last.property")).isEqualTo("last.value");
 
-        final Properties resolved = new Properties(properties);
-        resolved.setProperty("first.key", "first.value");
-        resolved.setProperty("second.key", "second.value");
-        resolved.setProperty("last.property", "last.value");
-        assertThat(applicationProperties.getProperties()).isEqualTo(resolved);
+        assertThat(applicationProperties.getMap())
+                .containsEntry("first.key", "first.value")
+                .containsEntry("second.key", "second.value")
+                .containsEntry("last.property", "last.value")
+                .hasSize(3);
     }
 
     @Test
@@ -87,7 +92,10 @@ public class ApplicationPropertiesTest {
         final Properties resolved = new Properties(properties);
         resolved.setProperty("first.key", "first.value");
         resolved.setProperty("second.key", "different.value");
-        assertThat(applicationProperties.getProperties()).isEqualTo(resolved);
+        assertThat(applicationProperties.getMap())
+                .containsEntry("first.key", "first.value")
+                .containsEntry("second.key", "different.value")
+                .hasSize(2);
     }
 
     private Properties getProperties(String key, String value) {

@@ -7,8 +7,10 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     private Properties properties;
     private ExpectedApplicationProperties expectedApplicationProperties;
+    private boolean enableEnvironmentVariables;
 
     public BuilderImpl() {
+        enableEnvironmentVariables = false;
         properties = new Properties();
     }
 
@@ -25,6 +27,12 @@ public class BuilderImpl implements ApplicationProperties.Builder {
     }
 
     @Override
+    public ApplicationProperties.Builder enableEnvironmentVariables() {
+        this.enableEnvironmentVariables = true;
+        return this;
+    }
+
+    @Override
     public ApplicationProperties.Builder withProperty(String key, String value) {
         properties.setProperty(key, value);
         return this;
@@ -32,6 +40,11 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     @Override
     public ApplicationProperties build() {
-        return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties));
+        if(enableEnvironmentVariables){
+            return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties));
+        }else
+        {
+            return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties), System.getenv());
+        }
     }
 }
