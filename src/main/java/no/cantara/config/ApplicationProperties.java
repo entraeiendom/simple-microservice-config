@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -27,9 +28,15 @@ public class ApplicationProperties {
             log.info("The application has resolved the following properties");
             log.info(properties.toString());
             log.info("*********************");
-            final List<String> undefinedProperties = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(Collectors.toList());
+            final List<String> undefinedProperties = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(toList());
             if(!undefinedProperties.isEmpty()){
                 final String message = "Expected properties is not loaded "+undefinedProperties;
+                log.error(message);
+                throw new RuntimeException(message);
+            }
+            final List<String> undefinedValues = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !properties.containsValue(expectedPropertyName)).collect(toList());
+            if(!undefinedValues.isEmpty()){
+                final String message = "Expected properties is defined without value "+undefinedValues;
                 log.error(message);
                 throw new RuntimeException(message);
             }

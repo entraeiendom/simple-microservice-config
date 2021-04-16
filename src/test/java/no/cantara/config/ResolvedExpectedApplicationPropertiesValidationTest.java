@@ -35,7 +35,22 @@ public class ResolvedExpectedApplicationPropertiesValidationTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void shouldThrowExeptionWhenExpectedPropertiesDoesNotMatch() {
+    public void exceptionOnMissingPropertyValue() {
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+                .builder()
+                .withProperties(ServiceConfig.loadProperties("blank.properties"))
+                .withExpectedProperties(() -> {
+                    final HashSet<String> names = new HashSet<>();
+                    names.add("BLANK");
+                    return names;
+                })
+                .build();
+
+        applicationProperties.validate();
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void exceptionOnMissingPropertyKey() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withExpectedProperties(new MyExpectedApplicationProperties())
