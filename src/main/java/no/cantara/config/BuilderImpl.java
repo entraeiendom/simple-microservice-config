@@ -14,7 +14,7 @@ public class BuilderImpl implements ResolvedApplicationProperties.Builder {
 
     @Override
     public ResolvedApplicationProperties.Builder withExpectedProperties(ApplicationProperties applicationProperties) {
-        applicationProperties = applicationProperties;
+        this.applicationProperties = applicationProperties;
         return this;
     }
 

@@ -6,8 +6,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -27,7 +29,13 @@ public class ResolvedApplicationProperties {
 
     public void validate() {
         if(expectedApplicationProperties.isPresent()){
-
+            final Set<String> propertyNames = this.properties.stringPropertyNames();
+            final List<String> undefinedProperties = expectedApplicationProperties.get().getExpectedProperties().stream().filter(expectedPropertyName -> !propertyNames.contains(expectedPropertyName)).collect(Collectors.toList());
+            if(!undefinedProperties.isEmpty()){
+                final String message = "Expected properties is not loaded "+undefinedProperties;
+                log.error(message);
+                throw new RuntimeException(message);
+            }
         }else{
             throw new IllegalStateException("Expected application properties is not defined and as such cannot be validated");
         }
