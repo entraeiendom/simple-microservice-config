@@ -3,6 +3,7 @@ package no.cantara.config;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -23,24 +24,33 @@ public class ApplicationProperties {
 
 
     public void validate() {
-        if(expectedApplicationProperties.isPresent()){
+        if (expectedApplicationProperties.isPresent()) {
             log.info("*********************");
             log.info("The application has resolved the following properties");
             log.info(properties.toString());
             log.info("*********************");
-            final List<String> undefinedProperties = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(toList());
-            if(!undefinedProperties.isEmpty()){
-                final String message = "Expected properties is not loaded "+undefinedProperties;
+            final Set<String> expectedKeys = expectedApplicationProperties.get().getKeys();
+            final List<String> undefinedProperties = expectedKeys.stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(toList());
+            if (!undefinedProperties.isEmpty()) {
+                final String message = "Expected properties is not loaded " + undefinedProperties;
                 log.error(message);
                 throw new RuntimeException(message);
             }
-            final List<String> undefinedValues = expectedApplicationProperties.get().getKeys().stream().filter(expectedPropertyName -> !properties.containsValue(expectedPropertyName)).collect(toList());
-            if(!undefinedValues.isEmpty()){
-                final String message = "Expected properties is defined without value "+undefinedValues;
+            final List<String> undefinedValues = expectedKeys.stream()
+                    .filter(expectedPropertyName ->
+                            properties.getProperty(expectedPropertyName) == null || properties.getProperty(expectedPropertyName).isEmpty()
+                    ).collect(toList());
+            if (!undefinedValues.isEmpty()) {
+                final String message = "Expected properties is defined without value " + undefinedValues;
                 log.error(message);
                 throw new RuntimeException(message);
             }
-        }else{
+            final List<String> additionalProperties = properties.stringPropertyNames().stream().filter(s -> !expectedKeys.contains(s)).collect(toList());
+            if (!additionalProperties.isEmpty()) {
+                log.warn("The following properties are loaded but not defined as expected for the application {}", additionalProperties);
+            }
+
+        } else {
             throw new IllegalStateException("Expected application properties is not defined and as such cannot be validated");
         }
     }
@@ -66,8 +76,6 @@ public class ApplicationProperties {
         Builder withProperty(String key, String value);
 
         ApplicationProperties build();
-
-
 
 
     }

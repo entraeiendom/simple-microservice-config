@@ -34,6 +34,18 @@ public class ResolvedExpectedApplicationPropertiesValidationTest {
         applicationProperties.validate();
     }
 
+    @Test
+    public void shouldAcceptNonExpectedProperties() {
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+                .builder()
+                .withProperty("base.url", "http-value")
+                .withProperty("second.base.url", "another-http-value")
+                .withExpectedProperties(new MyExpectedApplicationProperties())
+                .build();
+
+        applicationProperties.validate();
+    }
+
     @Test(expected = RuntimeException.class)
     public void exceptionOnMissingPropertyValue() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
