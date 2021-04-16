@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ResolvedExpectedApplicationPropertiesTest {
+public class ApplicationPropertiesTest {
 
 
     @Test

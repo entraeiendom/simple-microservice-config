@@ -3,12 +3,9 @@ package no.cantara.config;
 import org.junit.Test;
 
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class ResolvedExpectedApplicationPropertiesValidationTest {
+public class ApplicationPropertiesValidationTest {
 
 
     @Test(expected = IllegalStateException.class)
