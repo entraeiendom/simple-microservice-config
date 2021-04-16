@@ -71,12 +71,6 @@ public class ResolvedExpectedApplicationPropertiesValidationTest {
         applicationProperties.validate();
     }
 
-    private Properties getProperties(String key, String value) {
-        final Properties properties = new Properties();
-        properties.setProperty(key, value);
-        return properties;
-    }
-
     public class MyExpectedApplicationProperties implements ApiExpectedApplicationProperties {
 
 
