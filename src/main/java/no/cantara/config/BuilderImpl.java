@@ -20,6 +20,7 @@ public class BuilderImpl implements ResolvedApplicationProperties.Builder {
 
     @Override
     public ResolvedApplicationProperties.Builder withProperties(Properties properties) {
+        this.properties = properties;
         return this;
     }
 
