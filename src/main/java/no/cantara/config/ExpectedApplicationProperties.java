@@ -16,12 +16,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * The name of expected properties
  */
-public class ExpectedApplicationProperties {
+public interface ExpectedApplicationProperties {
 
-    public Set<String> getKeys(){
-        final HashSet<String> names = new HashSet<>();
-        names.add("base.url");
-        return names;
-    }
+    Set<String> getKeys();
 }
 
