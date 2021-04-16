@@ -37,6 +37,10 @@ public class ResolvedApplicationProperties {
         return properties.getProperty(name);
     }
 
+    public Properties getProperties() {
+        return properties;
+    }
+
     public interface Builder {
 
         static ResolvedApplicationProperties.Builder builder() {
