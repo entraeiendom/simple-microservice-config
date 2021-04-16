@@ -6,12 +6,12 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ResolvedApplicationPropertiesValidationTest {
+public class ResolvedExpectedApplicationPropertiesValidationTest {
 
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExeptionWhenValidationWithoutExpectedProperties() {
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperty("base.url", "http-value")
                 .build();
@@ -23,9 +23,9 @@ public class ResolvedApplicationPropertiesValidationTest {
 
     @Test(expected = RuntimeException.class)
     public void shouldValidateExpectedProperties() {
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withExpectedProperties(new ApplicationProperties())
+                .withExpectedProperties(new ExpectedApplicationProperties())
                 .build();
 
         applicationProperties.validate();

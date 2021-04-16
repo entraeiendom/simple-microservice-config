@@ -6,13 +6,13 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ResolvedApplicationPropertiesTest {
+public class ResolvedExpectedApplicationPropertiesTest {
 
 
     @Test
     public void shouldGetPropertiesWithSingleProperty() {
         final Properties properties = getProperties("base.url", "http-value");
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperty("base.url", "http-value")
                 .build();
@@ -26,7 +26,7 @@ public class ResolvedApplicationPropertiesTest {
     public void shouldGetPropertiesWithPropertiesSet() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
                 .build();
@@ -40,7 +40,7 @@ public class ResolvedApplicationPropertiesTest {
     public void orderMatters_withPropertiesOverridesAll() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperty("first.property", "first.value")
                 .withProperties(properties)
@@ -56,7 +56,7 @@ public class ResolvedApplicationPropertiesTest {
     public void orderMatters_withPropertyAdds() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
                 .withProperty("last.property", "last.value")
@@ -76,7 +76,7 @@ public class ResolvedApplicationPropertiesTest {
     public void orderMatters_withPropertyCanOverride() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ResolvedApplicationProperties applicationProperties = ResolvedApplicationProperties.Builder
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
                 .withProperty("second.key", "different.value")

@@ -3,35 +3,35 @@ package no.cantara.config;
 import java.util.Optional;
 import java.util.Properties;
 
-public class BuilderImpl implements ResolvedApplicationProperties.Builder {
+public class BuilderImpl implements ApplicationProperties.Builder {
 
     private Properties properties;
-    private ApplicationProperties applicationProperties;
+    private ExpectedApplicationProperties expectedApplicationProperties;
 
     public BuilderImpl() {
         properties = new Properties();
     }
 
     @Override
-    public ResolvedApplicationProperties.Builder withExpectedProperties(ApplicationProperties applicationProperties) {
-        this.applicationProperties = applicationProperties;
+    public ApplicationProperties.Builder withExpectedProperties(ExpectedApplicationProperties expectedApplicationProperties) {
+        this.expectedApplicationProperties = expectedApplicationProperties;
         return this;
     }
 
     @Override
-    public ResolvedApplicationProperties.Builder withProperties(Properties properties) {
+    public ApplicationProperties.Builder withProperties(Properties properties) {
         this.properties = properties;
         return this;
     }
 
     @Override
-    public ResolvedApplicationProperties.Builder withProperty(String key, String value) {
+    public ApplicationProperties.Builder withProperty(String key, String value) {
         properties.setProperty(key, value);
         return this;
     }
 
     @Override
-    public ResolvedApplicationProperties build() {
-        return new ResolvedApplicationProperties(properties, Optional.ofNullable(applicationProperties));
+    public ApplicationProperties build() {
+        return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties));
     }
 }
