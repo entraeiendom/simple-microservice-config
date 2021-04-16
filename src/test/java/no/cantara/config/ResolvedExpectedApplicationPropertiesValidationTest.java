@@ -23,15 +23,22 @@ public class ResolvedExpectedApplicationPropertiesValidationTest {
 
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void shouldValidateExpectedProperties() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withExpectedProperties(() -> {
-                    final HashSet<String> names = new HashSet<>();
-                    names.add("base.url");
-                    return names;
-                })
+                .withProperty("base.url", "http-value")
+                .withExpectedProperties(new MyExpectedApplicationProperties())
+                .build();
+
+        applicationProperties.validate();
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowExeptionWhenExpectedPropertiesDoesNotMatch() {
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+                .builder()
+                .withExpectedProperties(new MyExpectedApplicationProperties())
                 .build();
 
         applicationProperties.validate();
@@ -42,4 +49,23 @@ public class ResolvedExpectedApplicationPropertiesValidationTest {
         properties.setProperty(key, value);
         return properties;
     }
+
+    public class MyExpectedApplicationProperties implements ApiExpectedApplicationProperties {
+
+
+        @Override
+        public Set<String> getKeys() {
+            return getApiKeys();
+        }
+    }
+
+    public interface ApiExpectedApplicationProperties extends ExpectedApplicationProperties {
+
+        default Set<String> getApiKeys(){
+            final HashSet<String> names = new HashSet<>();
+            names.add("base.url");
+            return names;
+        }
+    }
+
 }
