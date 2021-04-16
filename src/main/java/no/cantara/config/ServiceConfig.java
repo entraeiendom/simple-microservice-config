@@ -17,6 +17,9 @@ public class ServiceConfig {
     private static final Logger log = getLogger(ServiceConfig.class);
 
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "default.properties";
+    // Add application.properties
+    // Add application.yaml
+    // Add microprofile_config.properties
     public static final String LOCAL_CONFIG_FILE_NAME = "local_config.properties";
 
     public static Properties loadProperties() {
@@ -28,7 +31,6 @@ public class ServiceConfig {
 
         try {
             InputStream in = ServiceConfig.class.getClassLoader().getResourceAsStream(defaultPropertiesFileName);
-//            in = new FileInputStream(defaultPropertiesFileName);
             defaultProps.load(in);
             in.close();
             log.debug("Loaded {} default properties from {}", defaultProps.size(), defaultPropertiesFileName);
@@ -60,6 +62,7 @@ public class ServiceConfig {
                 log.debug("Failed to read {}. Reason {}", LOCAL_CONFIG_FILE_NAME, ioe.getMessage());
             }
         }
+
         return applicationProps;
     }
 
