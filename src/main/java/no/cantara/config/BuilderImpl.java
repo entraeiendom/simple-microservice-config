@@ -28,8 +28,7 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     @Override
     public ApplicationProperties.Builder enableEnvironmentVariables() {
-        this.enableEnvironmentVariables = true;
-        return this;
+        throw new RuntimeException("Environment variables not supported at the moment");
     }
 
     @Override
