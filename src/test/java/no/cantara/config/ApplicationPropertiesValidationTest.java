@@ -25,7 +25,6 @@ public class ApplicationPropertiesValidationTest {
                 .withExpectedProperties(ApiExpectedApplicationProperties.class)
                 .build();
 
-        applicationProperties.validate();
     }
 
     @Test
@@ -36,8 +35,6 @@ public class ApplicationPropertiesValidationTest {
                 .setProperty("second.base.url", "another-http-value")
                 .withExpectedProperties(ApiExpectedApplicationProperties.class)
                 .build();
-
-        applicationProperties.validate();
     }
 
     @Test(expected = RuntimeException.class)
@@ -48,7 +45,6 @@ public class ApplicationPropertiesValidationTest {
                 .withExpectedProperties(MyExpectedApplicationProperties.class)
                 .build();
 
-        applicationProperties.validate();
     }
 
     @Test(expected = RuntimeException.class)
@@ -58,7 +54,6 @@ public class ApplicationPropertiesValidationTest {
                 .withExpectedProperties(MyExpectedApplicationProperties.class)
                 .build();
 
-        applicationProperties.validate();
     }
 
 
@@ -71,7 +66,6 @@ public class ApplicationPropertiesValidationTest {
                 .withExpectedProperties(MyExpectedApplicationProperties.class, ApiExpectedApplicationProperties.class)
                 .build();
 
-        applicationProperties.validate();
     }
 
     public class MyExpectedApplicationProperties {

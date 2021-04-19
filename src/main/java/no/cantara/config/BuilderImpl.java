@@ -31,7 +31,7 @@ public class BuilderImpl implements ApplicationProperties.Builder {
                                 } catch (IllegalAccessException e) {
                                     return "";
                                 }
-                            }).filter(s -> s.isEmpty())
+                            }).filter(s -> !s.isEmpty())
                             .collect(Collectors.toSet());
                     return fields;
                 }).flatMap(Collection::stream)
@@ -59,10 +59,16 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     @Override
     public ApplicationProperties build() {
+        ApplicationProperties applicationProperties;
+        final Optional<Set<String>> expectedApplicationProperties = Optional.ofNullable(this.expectedApplicationProperties);
         if (enableEnvironmentVariables) {
-            return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties));
+             applicationProperties = new ApplicationProperties(properties, expectedApplicationProperties);
         } else {
-            return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties), System.getenv());
+            applicationProperties =  new ApplicationProperties(properties, expectedApplicationProperties, System.getenv());
         }
+        if(expectedApplicationProperties.isPresent()){
+            applicationProperties.validate();
+        }
+        return applicationProperties;
     }
 }
