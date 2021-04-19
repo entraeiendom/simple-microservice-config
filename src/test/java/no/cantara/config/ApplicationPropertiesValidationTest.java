@@ -12,7 +12,7 @@ public class ApplicationPropertiesValidationTest {
     public void shouldThrowExeptionWhenValidationWithoutExpectedProperties() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withProperty("base.url", "http-value")
+                .setProperty("base.url", "http-value")
                 .build();
 
         applicationProperties.validate();
@@ -24,7 +24,7 @@ public class ApplicationPropertiesValidationTest {
     public void shouldValidateExpectedProperties() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withProperty("base.url", "http-value")
+                .setProperty("base.url", "http-value")
                 .withExpectedProperties(new MyExpectedApplicationProperties())
                 .build();
 
@@ -35,8 +35,8 @@ public class ApplicationPropertiesValidationTest {
     public void shouldAcceptNonExpectedProperties() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withProperty("base.url", "http-value")
-                .withProperty("second.base.url", "another-http-value")
+                .setProperty("base.url", "http-value")
+                .setProperty("second.base.url", "another-http-value")
                 .withExpectedProperties(new MyExpectedApplicationProperties())
                 .build();
 

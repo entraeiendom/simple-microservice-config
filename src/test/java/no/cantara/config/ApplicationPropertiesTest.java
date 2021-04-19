@@ -13,7 +13,7 @@ public class ApplicationPropertiesTest {
     public void shouldGetPropertiesWithSingleProperty() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withProperty("base.url", "http-value")
+                .setProperty("base.url", "http-value")
                 .build();
         assertThat(applicationProperties.get("base.url")).isEqualTo("http-value");
 
@@ -44,7 +44,7 @@ public class ApplicationPropertiesTest {
         properties.setProperty("second.key", "second.value");
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withProperty("first.property", "first.value")
+                .setProperty("first.property", "first.value")
                 .withProperties(properties)
                 .build();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
@@ -64,7 +64,7 @@ public class ApplicationPropertiesTest {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
-                .withProperty("last.property", "last.value")
+                .setProperty("last.property", "last.value")
                 .build();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
@@ -84,7 +84,7 @@ public class ApplicationPropertiesTest {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
-                .withProperty("second.key", "different.value")
+                .setProperty("second.key", "different.value")
                 .build();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("different.value");

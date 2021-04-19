@@ -32,7 +32,7 @@ public class BuilderImpl implements ApplicationProperties.Builder {
     }
 
     @Override
-    public ApplicationProperties.Builder withProperty(String key, String value) {
+    public ApplicationProperties.Builder setProperty(String key, String value) {
         properties.setProperty(key, value);
         return this;
     }

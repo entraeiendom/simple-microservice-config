@@ -88,7 +88,7 @@ public class ApplicationProperties {
 
         Builder enableEnvironmentVariables();
 
-        Builder withProperty(String key, String value);
+        Builder setProperty(String key, String value);
 
         ApplicationProperties build();
 
