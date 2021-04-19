@@ -3,10 +3,7 @@ package no.cantara.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BuilderImpl implements ApplicationProperties.Builder {
@@ -24,29 +21,21 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     @Override
     public ApplicationProperties.Builder withExpectedProperties(Class... expectedApplicationProperties) {
-        final Set<String> propertyNames = Arrays.stream(expectedApplicationProperties).map(new Function<Class, Set<String>>() {
-            @Override
-            public Set<String> apply(Class aClass) {
-                final Set<String> fields = Arrays.stream(aClass.getDeclaredFields()).filter(new Predicate<Field>() {
-                    @Override
-                    public boolean test(Field field) {
-                        return field.getType() == String.class;
-                    }
-                }).map(new Function<Field, String>() {
-                    @Override
-                    public String apply(Field field) {
-                        try {
-                            return (String) field.get(null);
-                        } catch (IllegalAccessException e) {
-                            log.error("This should be filtered out before!");
-                            return "";
-                        }
-
-                    }
-                }).collect(Collectors.toSet());
-                return fields;
-            }
-        }).flatMap(Collection::stream).collect(Collectors.toSet());
+        final Set<String> propertyNames = Arrays.stream(expectedApplicationProperties)
+                .map(aClass -> {
+                    final Set<String> fields = Arrays.stream(aClass.getDeclaredFields())
+                            .filter(field -> field.getType() == String.class)
+                            .map(field -> {
+                                try {
+                                    return (String) field.get(null);
+                                } catch (IllegalAccessException e) {
+                                    return "";
+                                }
+                            }).filter(s -> s.isEmpty())
+                            .collect(Collectors.toSet());
+                    return fields;
+                }).flatMap(Collection::stream)
+                .collect(Collectors.toSet());
         this.expectedApplicationProperties = propertyNames;
         return this;
     }
@@ -70,10 +59,9 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     @Override
     public ApplicationProperties build() {
-        if(enableEnvironmentVariables){
+        if (enableEnvironmentVariables) {
             return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties));
-        }else
-        {
+        } else {
             return new ApplicationProperties(properties, Optional.ofNullable(expectedApplicationProperties), System.getenv());
         }
     }
