@@ -29,6 +29,7 @@ public class BuilderImpl implements ApplicationProperties.Builder {
                                 try {
                                     return (String) field.get(null);
                                 } catch (IllegalAccessException e) {
+                                    log.info("Field with name {} is non-accessible", field.getName());
                                     return "";
                                 }
                             }).filter(s -> !s.isEmpty())
