@@ -16,13 +16,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class ServiceConfig {
     private static final Logger log = getLogger(ServiceConfig.class);
 
-    public static final String DEFAULT_PROPERTIES_FILE_NAME = "default.properties";
+    public static final String DEFAULT_PROPERTIES_FILE_NAME = "application.properties";
     // Other sources and what is a good ordering?
     // Add application.properties
     // Add application.yaml
     // Add microprofile_config.properties
     // Environment properties
-    public static final String LOCAL_CONFIG_FILE_NAME = "local_config.properties";
+    public static final String LOCAL_CONFIG_FILE_NAME = "local_override.properties";
 
     public static Properties loadProperties() {
         return loadProperties(DEFAULT_PROPERTIES_FILE_NAME);
