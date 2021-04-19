@@ -15,16 +15,16 @@ public class ApplicationProperties {
     private static final Logger log = getLogger(ApplicationProperties.class);
     private final Map<String, String> envVariables;
     private Properties properties;
-    private Optional<ExpectedApplicationProperties> expectedApplicationProperties;
+    private Optional<Set<String>> expectedApplicationProperties;
 
-    public ApplicationProperties(Properties properties, Optional<ExpectedApplicationProperties> expectedApplicationProperties) {
+    public ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties) {
         this.expectedApplicationProperties = expectedApplicationProperties;
         this.properties = properties;
         envVariables = Collections.emptyMap();
     }
 
 
-    public <T> ApplicationProperties(Properties properties, Optional<ExpectedApplicationProperties> expectedApplicationProperties, Map<String, String> envVariables) {
+    public <T> ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties, Map<String, String> envVariables) {
         this.expectedApplicationProperties = expectedApplicationProperties;
         this.properties = properties;
         this.envVariables = envVariables;
@@ -37,7 +37,7 @@ public class ApplicationProperties {
             log.info("The application has resolved the following properties");
             log.info(properties.toString());
             log.info("*********************");
-            final Set<String> expectedKeys = expectedApplicationProperties.get().getKeys();
+            final Set<String> expectedKeys = expectedApplicationProperties.get();
             final List<String> undefinedProperties = expectedKeys.stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(toList());
             if (!undefinedProperties.isEmpty()) {
                 final String message = "Expected properties is not loaded " + undefinedProperties;

@@ -2,11 +2,12 @@ package no.cantara.config;
 
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public class BuilderImpl implements ApplicationProperties.Builder {
 
     private Properties properties;
-    private ExpectedApplicationProperties expectedApplicationProperties;
+    private Set<String> expectedApplicationProperties;
     private boolean enableEnvironmentVariables;
 
     public BuilderImpl() {
@@ -16,7 +17,7 @@ public class BuilderImpl implements ApplicationProperties.Builder {
 
     @Override
     public ApplicationProperties.Builder withExpectedProperties(ExpectedApplicationProperties expectedApplicationProperties) {
-        this.expectedApplicationProperties = expectedApplicationProperties;
+        this.expectedApplicationProperties = expectedApplicationProperties.getKeys();
         return this;
     }
 
