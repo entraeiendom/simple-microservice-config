@@ -2,9 +2,6 @@ package no.cantara.config;
 
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class ApplicationPropertiesValidationTest {
 
 
@@ -25,7 +22,7 @@ public class ApplicationPropertiesValidationTest {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .setProperty("base.url", "http-value")
-                .withExpectedProperties(new MyExpectedApplicationProperties())
+                .withExpectedProperties(ApiExpectedApplicationProperties.class)
                 .build();
 
         applicationProperties.validate();
@@ -37,7 +34,7 @@ public class ApplicationPropertiesValidationTest {
                 .builder()
                 .setProperty("base.url", "http-value")
                 .setProperty("second.base.url", "another-http-value")
-                .withExpectedProperties(new MyExpectedApplicationProperties())
+                .withExpectedProperties(ApiExpectedApplicationProperties.class)
                 .build();
 
         applicationProperties.validate();
@@ -48,11 +45,7 @@ public class ApplicationPropertiesValidationTest {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .withProperties(ServiceConfig.loadProperties("blank.properties"))
-                .withExpectedProperties(() -> {
-                    final HashSet<String> names = new HashSet<>();
-                    names.add("BLANK");
-                    return names;
-                })
+                .withExpectedProperties(MyExpectedApplicationProperties.class)
                 .build();
 
         applicationProperties.validate();
@@ -62,28 +55,35 @@ public class ApplicationPropertiesValidationTest {
     public void exceptionOnMissingPropertyKey() {
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
-                .withExpectedProperties(new MyExpectedApplicationProperties())
+                .withExpectedProperties(MyExpectedApplicationProperties.class)
                 .build();
 
         applicationProperties.validate();
     }
 
-    public class MyExpectedApplicationProperties implements ApiExpectedApplicationProperties {
 
+    @Test
+    public void doubleClassOfExpectedProperties() {
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+                .builder()
+                .setProperty(MyExpectedApplicationProperties.POSTGRES_URL, "postgres-value")
+                .setProperty(ApiExpectedApplicationProperties.BASE_URL, "http-value")
+                .withExpectedProperties(MyExpectedApplicationProperties.class, ApiExpectedApplicationProperties.class)
+                .build();
 
-        @Override
-        public Set<String> getKeys() {
-            return getApiKeys();
-        }
+        applicationProperties.validate();
     }
 
-    public interface ApiExpectedApplicationProperties extends ExpectedApplicationProperties {
+    public class MyExpectedApplicationProperties {
 
-        default Set<String> getApiKeys(){
-            final HashSet<String> names = new HashSet<>();
-            names.add("base.url");
-            return names;
-        }
+        public static final String POSTGRES_URL = "postgres.url";
+
+    }
+
+    public interface ApiExpectedApplicationProperties  {
+
+        public static final String BASE_URL = "base.url";
+
     }
 
 }

@@ -82,7 +82,7 @@ public class ApplicationProperties {
             return new BuilderImpl();
         }
 
-        Builder withExpectedProperties(ExpectedApplicationProperties expectedApplicationProperties);
+        Builder withExpectedProperties(Class... expectedApplicationProperties);
 
         Builder withProperties(Properties properties);
 
