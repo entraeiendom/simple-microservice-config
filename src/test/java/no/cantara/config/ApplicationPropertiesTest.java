@@ -1,20 +1,31 @@
 package no.cantara.config;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ApplicationPropertiesTest {
 
+    @Before
+    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field instance = ApplicationProperties.class.getDeclaredField("SINGELTON");
+        instance.setAccessible(true);
+        instance.set(null, null);
+    }
+
+
 
     @Test
     public void shouldGetPropertiesWithSingleProperty() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty("base.url", "http-value")
-                .build();
+                .init();
+        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("base.url")).isEqualTo("http-value");
 
         assertThat(applicationProperties.getMap()).containsEntry("base.url", "http-value");
@@ -25,10 +36,11 @@ public class ApplicationPropertiesTest {
     public void shouldGetPropertiesWithPropertiesSet() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
-                .build();
+                .init();
+        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
 
@@ -42,11 +54,12 @@ public class ApplicationPropertiesTest {
     public void orderMatters_withPropertiesOverridesAll() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty("first.property", "first.value")
                 .withProperties(properties)
-                .build();
+                .init();
+        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
         assertThat(applicationProperties.get("first.property")).isNull();
@@ -61,11 +74,12 @@ public class ApplicationPropertiesTest {
     public void orderMatters_withPropertyAdds() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
                 .setProperty("last.property", "last.value")
-                .build();
+                .init();
+        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
         assertThat(applicationProperties.get("last.property")).isEqualTo("last.value");
@@ -81,11 +95,12 @@ public class ApplicationPropertiesTest {
     public void orderMatters_withPropertyCanOverride() {
         final Properties properties = getProperties("first.key", "first.value");
         properties.setProperty("second.key", "second.value");
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .withProperties(properties)
                 .setProperty("second.key", "different.value")
-                .build();
+                .init();
+        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("different.value");
 
@@ -103,7 +118,7 @@ public class ApplicationPropertiesTest {
         final String longSecret = "youshouldnotseeme";
         final String shortSecret = "10tokensxx";
         final String publicValue = "an-url";
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty("base", publicValue)
                 .setProperty("secret_so_much", longSecret)
@@ -112,7 +127,8 @@ public class ApplicationPropertiesTest {
                 .setProperty("postgres.password", longSecret)
                 .setProperty("slack_token", longSecret)
                 .setProperty("token_short", shortSecret)
-                .build();
+                .init();
+        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.logObfuscatedProperties())
                 .doesNotContain(longSecret)
                 .doesNotContain(shortSecret)

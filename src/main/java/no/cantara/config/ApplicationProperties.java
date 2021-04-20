@@ -1,6 +1,7 @@
 package no.cantara.config;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -17,18 +18,26 @@ public class ApplicationProperties {
     private final Map<String, String> envVariables;
     private Properties properties;
     private Optional<Set<String>> expectedApplicationProperties;
+    private static ApplicationProperties SINGELTON;
 
-    public ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties) {
+    private ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties) {
         this.expectedApplicationProperties = expectedApplicationProperties;
         this.properties = properties;
         envVariables = Collections.emptyMap();
     }
 
 
-    public <T> ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties, Map<String, String> envVariables) {
+    private <T> ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties, Map<String, String> envVariables) {
         this.expectedApplicationProperties = expectedApplicationProperties;
         this.properties = properties;
         this.envVariables = envVariables;
+    }
+
+    public static ApplicationProperties getInstance() {
+        if (SINGELTON == null) {
+            throw new IllegalStateException("Cannot get ApplicationProperties-instance prior to Builder.init()");
+        }
+        return SINGELTON;
     }
 
 
@@ -77,6 +86,27 @@ public class ApplicationProperties {
                 ));
     }
 
+    public String logObfuscatedProperties() {
+        final Map<Object, Object> obfuscatedProperties = properties.entrySet().stream().map(
+                (Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>>) entry -> {
+                    final String key = (String) entry.getKey();
+                    final String value = (String) entry.getValue();
+                    final boolean isSecret = key.contains("secret") || key.contains("token") || key.contains("password");
+                    if (isSecret) {
+                        if (value.length() > 10) {
+                            final String substring = value.substring(0, 2);
+                            return new AbstractMap.SimpleEntry<>(key, substring + "******");
+                        } else {
+                            return new AbstractMap.SimpleEntry<>(key, "******");
+                        }
+
+                    } else {
+                        return entry;
+                    }
+                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return obfuscatedProperties.toString();
+    }
+
     public interface Builder {
 
         static ApplicationProperties.Builder builder() {
@@ -91,30 +121,79 @@ public class ApplicationProperties {
 
         Builder setProperty(String key, String value);
 
-        ApplicationProperties build();
-
+        void init();
 
     }
 
-    public String logObfuscatedProperties() {
-        final Map<Object, Object> obfuscatedProperties = properties.entrySet().stream().map(
-                (Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>>) entry -> {
-                    final String key = (String) entry.getKey();
-                    final String value = (String) entry.getValue();
-                    final boolean isSecret = key.contains("secret") || key.contains("token") || key.contains("password");
-                    if (isSecret) {
-                        if(value.length() > 10){
-                            final String substring = value.substring(0, 2);
-                            return new AbstractMap.SimpleEntry<>(key, substring + "******");
-                        }else {
-                            return new AbstractMap.SimpleEntry<>(key, "******");
-                        }
+    public static class BuilderImpl implements ApplicationProperties.Builder {
 
-                    } else {
-                        return entry;
-                    }
-                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return obfuscatedProperties.toString();
+        private final Logger log = LoggerFactory.getLogger(BuilderImpl.class);
+
+        private Properties properties;
+        private Set<String> expectedApplicationProperties;
+        private boolean enableEnvironmentVariables;
+
+        public BuilderImpl() {
+            enableEnvironmentVariables = false;
+            properties = new Properties();
+        }
+
+        @Override
+        public ApplicationProperties.Builder withExpectedProperties(Class... expectedApplicationProperties) {
+            final Set<String> propertyNames = Arrays.stream(expectedApplicationProperties)
+                    .map(aClass -> {
+                        final Set<String> fields = Arrays.stream(aClass.getDeclaredFields())
+                                .filter(field -> field.getType() == String.class)
+                                .map(field -> {
+                                    try {
+                                        return (String) field.get(null);
+                                    } catch (IllegalAccessException e) {
+                                        log.info("Field with name {} is non-accessible", field.getName());
+                                        return "";
+                                    }
+                                }).filter(s -> !s.isEmpty())
+                                .collect(Collectors.toSet());
+                        return fields;
+                    }).flatMap(Collection::stream)
+                    .collect(Collectors.toSet());
+            this.expectedApplicationProperties = propertyNames;
+            return this;
+        }
+
+        @Override
+        public ApplicationProperties.Builder withProperties(Properties properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        @Override
+        public ApplicationProperties.Builder enableEnvironmentVariables() {
+            throw new RuntimeException("Environment variables not supported at the moment");
+        }
+
+        @Override
+        public ApplicationProperties.Builder setProperty(String key, String value) {
+            properties.setProperty(key, value);
+            return this;
+        }
+
+        @Override
+        public synchronized void init() {
+            if (SINGELTON != null) {
+                throw new IllegalStateException("Cannon initialize ApplicationProperties-singelton twice");
+            }
+            ApplicationProperties applicationProperties;
+            final Optional<Set<String>> expectedApplicationProperties = Optional.ofNullable(this.expectedApplicationProperties);
+            if (enableEnvironmentVariables) {
+                applicationProperties = new ApplicationProperties(properties, expectedApplicationProperties);
+            } else {
+                applicationProperties = new ApplicationProperties(properties, expectedApplicationProperties, System.getenv());
+            }
+            if (expectedApplicationProperties.isPresent()) {
+                applicationProperties.validate();
+            }
+            SINGELTON = applicationProperties;
+        }
     }
 }
 

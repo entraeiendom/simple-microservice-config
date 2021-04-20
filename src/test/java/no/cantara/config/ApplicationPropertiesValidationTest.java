@@ -1,17 +1,27 @@
 package no.cantara.config;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+
 public class ApplicationPropertiesValidationTest {
+
+    @Before
+    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field instance = ApplicationProperties.class.getDeclaredField("SINGELTON");
+        instance.setAccessible(true);
+        instance.set(null, null);
+    }
 
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExeptionWhenValidationWithoutExpectedProperties() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty("base.url", "http-value")
-                .build();
-
+                .init();
+        final ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         applicationProperties.validate();
 
 
@@ -19,52 +29,52 @@ public class ApplicationPropertiesValidationTest {
 
     @Test
     public void shouldValidateExpectedProperties() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty("base.url", "http-value")
                 .withExpectedProperties(ApiExpectedApplicationProperties.class)
-                .build();
+                .init();
 
     }
 
     @Test
     public void shouldAcceptNonExpectedProperties() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty("base.url", "http-value")
                 .setProperty("second.base.url", "another-http-value")
                 .withExpectedProperties(ApiExpectedApplicationProperties.class)
-                .build();
+                .init();
     }
 
     @Test(expected = RuntimeException.class)
     public void exceptionOnMissingPropertyValue() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .withProperties(ServiceConfig.loadProperties("blank.properties"))
                 .withExpectedProperties(MyExpectedApplicationProperties.class)
-                .build();
+                .init();
 
     }
 
     @Test(expected = RuntimeException.class)
     public void exceptionOnMissingPropertyKey() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .withExpectedProperties(MyExpectedApplicationProperties.class)
-                .build();
+                .init();
 
     }
 
 
     @Test
     public void doubleClassOfExpectedProperties() {
-        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+        ApplicationProperties.Builder
                 .builder()
                 .setProperty(MyExpectedApplicationProperties.POSTGRES_URL, "postgres-value")
                 .setProperty(ApiExpectedApplicationProperties.BASE_URL, "http-value")
                 .withExpectedProperties(MyExpectedApplicationProperties.class, ApiExpectedApplicationProperties.class)
-                .build();
+                .init();
 
     }
 
