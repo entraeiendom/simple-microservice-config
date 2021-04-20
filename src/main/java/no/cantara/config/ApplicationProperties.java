@@ -103,8 +103,13 @@ public class ApplicationProperties {
                     final String value = (String) entry.getValue();
                     final boolean isSecret = key.contains("secret") || key.contains("token") || key.contains("password");
                     if (isSecret) {
-                        final String substring = value.substring(0, 2);
-                        return new AbstractMap.SimpleEntry<>(key, substring + "******");
+                        if(value.length() > 10){
+                            final String substring = value.substring(0, 2);
+                            return new AbstractMap.SimpleEntry<>(key, substring + "******");
+                        }else {
+                            return new AbstractMap.SimpleEntry<>(key, "******");
+                        }
+
                     } else {
                         return entry;
                     }

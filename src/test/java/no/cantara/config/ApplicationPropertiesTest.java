@@ -100,21 +100,25 @@ public class ApplicationPropertiesTest {
 
     @Test
     public void loggingPropertyValuesIsObfuscated() {
-        final String secretValue = "youshouldnotseeme";
+        final String longSecret = "youshouldnotseeme";
+        final String shortSecret = "10tokensxx";
         final String publicValue = "an-url";
         final ApplicationProperties applicationProperties = ApplicationProperties.Builder
                 .builder()
                 .setProperty("base", publicValue)
-                .setProperty("secret_so_much", secretValue)
-                .setProperty("a.secret", secretValue)
-                .setProperty("secret_so_much", secretValue)
-                .setProperty("postgres.password", secretValue)
-                .setProperty("slack_token", secretValue)
+                .setProperty("secret_so_much", longSecret)
+                .setProperty("a.secret", longSecret)
+                .setProperty("secret_so_much", longSecret)
+                .setProperty("postgres.password", longSecret)
+                .setProperty("slack_token", longSecret)
+                .setProperty("token_short", shortSecret)
                 .build();
         assertThat(applicationProperties.logObfuscatedProperties())
-                .doesNotContain(secretValue)
+                .doesNotContain(longSecret)
+                .doesNotContain(shortSecret)
                 .contains(publicValue)
-                .contains("yo******");
+                .contains("yo******")
+                .contains("token_short=******");
     }
 
     private Properties getProperties(String key, String value) {
