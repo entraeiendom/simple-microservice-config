@@ -98,6 +98,25 @@ public class ApplicationPropertiesTest {
                 .hasSize(2);
     }
 
+    @Test
+    public void loggingPropertyValuesIsObfuscated() {
+        final String secretValue = "youshouldnotseeme";
+        final String publicValue = "an-url";
+        final ApplicationProperties applicationProperties = ApplicationProperties.Builder
+                .builder()
+                .setProperty("base", publicValue)
+                .setProperty("secret_so_much", secretValue)
+                .setProperty("a.secret", secretValue)
+                .setProperty("secret_so_much", secretValue)
+                .setProperty("postgres.password", secretValue)
+                .setProperty("slack_token", secretValue)
+                .build();
+        assertThat(applicationProperties.logObfuscatedProperties())
+                .doesNotContain(secretValue)
+                .contains(publicValue)
+                .contains("yo******");
+    }
+
     private Properties getProperties(String key, String value) {
         final Properties properties = new Properties();
         properties.setProperty(key, value);

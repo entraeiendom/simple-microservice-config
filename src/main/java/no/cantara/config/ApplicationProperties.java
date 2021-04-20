@@ -3,6 +3,7 @@ package no.cantara.config;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -35,7 +36,7 @@ public class ApplicationProperties {
         if (expectedApplicationProperties.isPresent()) {
             log.info("*********************");
             log.info("The application has resolved the following properties");
-            log.info(properties.toString());
+            log.info(logObfuscatedProperties());
             log.info("*********************");
             final Set<String> expectedKeys = expectedApplicationProperties.get();
             final List<String> undefinedProperties = expectedKeys.stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(toList());
@@ -95,5 +96,20 @@ public class ApplicationProperties {
 
     }
 
+    public String logObfuscatedProperties() {
+        final Map<Object, Object> obfuscatedProperties = properties.entrySet().stream().map(
+                (Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>>) entry -> {
+                    final String key = (String) entry.getKey();
+                    final String value = (String) entry.getValue();
+                    final boolean isSecret = key.contains("secret") || key.contains("token") || key.contains("password");
+                    if (isSecret) {
+                        final String substring = value.substring(0, 2);
+                        return new AbstractMap.SimpleEntry<>(key, substring + "******");
+                    } else {
+                        return entry;
+                    }
+                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return obfuscatedProperties.toString();
+    }
 }
 
