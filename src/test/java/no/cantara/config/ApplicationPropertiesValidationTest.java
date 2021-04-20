@@ -74,7 +74,7 @@ public class ApplicationPropertiesValidationTest {
 
     }
 
-    public interface ApiExpectedApplicationProperties  {
+    public class ApiExpectedApplicationProperties  {
 
         public static final String BASE_URL = "base.url";
 
