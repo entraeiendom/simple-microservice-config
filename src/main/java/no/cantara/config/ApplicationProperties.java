@@ -18,7 +18,7 @@ public class ApplicationProperties {
     private final Map<String, String> envVariables;
     private Properties properties;
     private Optional<Set<String>> expectedApplicationProperties;
-    private static ApplicationProperties SINGELTON;
+    private static ApplicationProperties singleton;
 
     private ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties) {
         this.expectedApplicationProperties = expectedApplicationProperties;
@@ -34,10 +34,10 @@ public class ApplicationProperties {
     }
 
     public static ApplicationProperties getInstance() {
-        if (SINGELTON == null) {
+        if (singleton == null) {
             throw new IllegalStateException("Cannot get ApplicationProperties-instance prior to Builder.init()");
         }
-        return SINGELTON;
+        return singleton;
     }
 
 
@@ -179,7 +179,7 @@ public class ApplicationProperties {
 
         @Override
         public synchronized void init() {
-            if (SINGELTON != null) {
+            if (singleton != null) {
                 throw new IllegalStateException("Cannon initialize ApplicationProperties-singelton twice");
             }
             ApplicationProperties applicationProperties;
@@ -192,7 +192,7 @@ public class ApplicationProperties {
             if (expectedApplicationProperties.isPresent()) {
                 applicationProperties.validate();
             }
-            SINGELTON = applicationProperties;
+            singleton = applicationProperties;
         }
     }
 }

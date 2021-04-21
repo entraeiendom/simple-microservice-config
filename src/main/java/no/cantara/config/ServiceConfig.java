@@ -17,11 +17,6 @@ public class ServiceConfig {
     private static final Logger log = getLogger(ServiceConfig.class);
 
     public static final String DEFAULT_PROPERTIES_FILE_NAME = "application.properties";
-    // Other sources and what is a good ordering?
-    // Add application.properties
-    // Add application.yaml
-    // Add microprofile_config.properties
-    // Environment properties
     public static final String LOCAL_CONFIG_FILE_NAME = "local_override.properties";
 
     public static Properties loadProperties() {
@@ -70,6 +65,7 @@ public class ServiceConfig {
 
     @Deprecated
     public static String getProperty(String camel_case_key) {
+        log.warn("Using getProperty directly is deprecated and the overloading specified in ApplicationPropertiesBuilding is not guaranteed!");
         String value = System.getenv(camel_case_key);
         if (value == null || value.isEmpty()) {
             Properties properties = loadProperties();

@@ -12,7 +12,7 @@ public class ApplicationPropertiesTest {
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field instance = ApplicationProperties.class.getDeclaredField("SINGELTON");
+        Field instance = ApplicationProperties.class.getDeclaredField("singleton");
         instance.setAccessible(true);
         instance.set(null, null);
     }
