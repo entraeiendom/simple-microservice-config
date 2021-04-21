@@ -1,5 +1,6 @@
 package no.cantara.config;
 
+import no.cantara.config.testsupport.ApplicationPropertiesTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 

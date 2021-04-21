@@ -1,4 +1,6 @@
-package no.cantara.config;
+package no.cantara.config.testsupport;
+
+import no.cantara.config.ApplicationProperties;
 
 import java.lang.reflect.Field;
 
