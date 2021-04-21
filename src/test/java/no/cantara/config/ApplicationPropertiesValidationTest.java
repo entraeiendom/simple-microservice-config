@@ -3,15 +3,12 @@ package no.cantara.config;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 
 public class ApplicationPropertiesValidationTest {
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field instance = ApplicationProperties.class.getDeclaredField("singleton");
-        instance.setAccessible(true);
-        instance.set(null, null);
+        ApplicationPropertiesTestHelper.resetApplicationProperties();
     }
 
 

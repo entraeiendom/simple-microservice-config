@@ -3,7 +3,6 @@ package no.cantara.config;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,9 +11,7 @@ public class ApplicationPropertiesTest {
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field instance = ApplicationProperties.class.getDeclaredField("singleton");
-        instance.setAccessible(true);
-        instance.set(null, null);
+        ApplicationPropertiesTestHelper.resetApplicationProperties();
     }
 
 
