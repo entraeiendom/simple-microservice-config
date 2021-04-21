@@ -149,4 +149,18 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <distributionManagement>
+    <repository>
+      <id>entraos</id>
+      <name>EntraOS Release Repository</name>
+      <url>https://nexus.entraos.io/content/repositories/entraosreleases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>entraos</id>
+      <name>EntraOS Snapshot Repository</name>
+      <url>https://nexus.entraos.io/content/repositories/entraossnapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
 </project>
