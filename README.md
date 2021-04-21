@@ -3,10 +3,12 @@ Read configuration from application.properties on classpath and properties overr
 
 Future support is planned as environment properties and AWS for secret-distribution
 
-## How To
+## Property-files
 
 1. Create application.properties in your src/main/resouces.
 2. Create local_override.properties file on service root
+
+If you are moving from local_config.properties consider making an alias to support rollback `ln -s local_override.properties local_config.properties`
 
 ## Usage on runtime
 
