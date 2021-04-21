@@ -25,11 +25,11 @@
   </parent>
 
   <scm>
-    <developerConnection>scm:git:ssh://git@github.com/cantara/simple-microservice-config.git</developerConnection>
-    <connection>scm:git:https://github.com/cantara/simple-microservice-config.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/entraeiendom/simple-microservice-config.git</developerConnection>
+    <connection>scm:git:https://github.com/entraeiendom/simple-microservice-config.git</connection>
     <tag>HEAD</tag>
   </scm>
-  <url>https://github.com/Cantara/simple-microservice-config</url>
+  <url>https://github.com/entraeiendom/simple-microservice-config</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
