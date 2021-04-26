@@ -3,8 +3,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>no.entra.entraos</groupId>
-  <artifactId>simple-microservice-config</artifactId>
+  <groupId>no.cantara.config</groupId>
+  <artifactId>property-config</artifactId>
   <version>0.0.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -25,11 +25,11 @@
   </parent>
 
   <scm>
-    <developerConnection>scm:git:ssh://git@github.com/entraeiendom/simple-microservice-config.git</developerConnection>
-    <connection>scm:git:https://github.com/entraeiendom/simple-microservice-config.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/cantara/property-config.git</developerConnection>
+    <connection>scm:git:https://github.com/cantara/property-config.git</connection>
     <tag>HEAD</tag>
   </scm>
-  <url>https://github.com/entraeiendom/simple-microservice-config</url>
+  <url>https://github.com/cantara/property-config</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -149,18 +149,5 @@
       </plugins>
     </pluginManagement>
   </build>
-
-  <distributionManagement>
-    <repository>
-      <id>entraos</id>
-      <name>EntraOS Release Repository</name>
-      <url>https://nexus.entraos.io/content/repositories/entraosreleases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>entraos</id>
-      <name>EntraOS Snapshot Repository</name>
-      <url>https://nexus.entraos.io/content/repositories/entraossnapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
 
 </project>

@@ -1,4 +1,4 @@
-# simple-microservice-config
+# property-config
 Read configuration from application.properties on classpath and properties override from filesystem.
 
 Future support is planned as environment properties and AWS for secret-distribution
