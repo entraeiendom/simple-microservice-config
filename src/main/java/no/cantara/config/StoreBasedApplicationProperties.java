@@ -119,18 +119,6 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         return map;
     }
 
-    public String debugProperty(String name) {
-        Iterator<Store> it = storeList.iterator();
-        while (it.hasNext()) {
-            Store store = it.next();
-            String value = store.get(name);
-            if (value != null) {
-                return value;
-            }
-        }
-        return null;
-    }
-
     private interface Store {
         /**
          * @param key
