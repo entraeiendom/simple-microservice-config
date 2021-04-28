@@ -62,6 +62,17 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         return effectiveProperties.get(name);
     }
 
+    @Override
+    public List<String> sourcesOf(String name) {
+        List<String> result = new ArrayList<>(storeList.size());
+        for (Store store : storeList) {
+            if (store.get(name) != null) {
+                result.add(store.toString());
+            }
+        }
+        return result;
+    }
+
     Map<String, String> buildMapFromStore() {
         Map<String, String> map = new LinkedHashMap<>();
         Iterator<Store> it = storeList.descendingIterator();

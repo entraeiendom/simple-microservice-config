@@ -1,6 +1,8 @@
 package no.cantara.config;
 
 import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -12,6 +14,19 @@ public interface ApplicationProperties {
     Map<String, String> map();
 
     String get(String name);
+
+    /**
+     * Get the all configuration sources that provide a value for the given property. The first value in the returned
+     * list is the effective value of the property. The next value in the list is the value that would have been the
+     * effective value if the source of the first value in the list had not been used, and so on.
+     * <p>
+     * The intended use for this tool is debugging of configuration issues. It is not intended to be used by application
+     * logic to differentiate on configuration.
+     *
+     * @param name the name of the property to get the sources of.
+     * @return a list (possibly empty) of all the sources that provide values for the property with the given name.
+     */
+    List<String> sourcesOf(String name);
 
     default String get(String name, String defaultValue) {
         String value = get(name);
