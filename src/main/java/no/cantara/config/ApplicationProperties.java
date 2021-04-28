@@ -44,7 +44,33 @@ public interface ApplicationProperties {
      * @param name the name of the property to get the sources of.
      * @return a list (possibly empty) of all the sources that provide values for the property with the given name.
      */
-    List<String> sourcesOf(String name);
+    List<Source> sourcesOf(String name);
+
+    interface Source {
+        String propertyName();
+
+        String propertyValue();
+
+        String description();
+
+        SourceConfigurationLocationException stackTraceElement();
+    }
+
+    /**
+     * Return a string suitable for debugging sources of all properties. If the parameter to debug overridden sources
+     * is set, then all sources of a property is printed in string, otherwise only effective source for any given
+     * property is printed.
+     *
+     * @param debugOverriddenSources whether to include non-effective sources for debugged properties
+     * @return a string that can be read by humans for debugging source configuration of properties.
+     */
+    default String debugAll(boolean debugOverriddenSources) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> property : map().entrySet()) {
+            DebugUtils.debugSources(sourcesOf(property.getKey()), debugOverriddenSources, sb);
+        }
+        return sb.toString();
+    }
 
     default String get(String name, String defaultValue) {
         String value = get(name);

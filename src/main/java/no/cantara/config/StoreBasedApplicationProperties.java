@@ -62,12 +62,48 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         return effectiveProperties.get(name);
     }
 
+    static class DebuggableSource implements Source {
+
+        final Store store;
+        final String propertyName;
+
+        DebuggableSource(Store store, String propertyName) {
+            this.store = store;
+            this.propertyName = propertyName;
+        }
+
+        @Override
+        public String propertyName() {
+            return propertyName;
+        }
+
+        @Override
+        public String propertyValue() {
+            return store.get(propertyName);
+        }
+
+        @Override
+        public String description() {
+            return store.toString();
+        }
+
+        @Override
+        public SourceConfigurationLocationException stackTraceElement() {
+            return store.stackWhenConfigured();
+        }
+
+        @Override
+        public String toString() {
+            return DebugUtils.debugSource(this);
+        }
+    }
+
     @Override
-    public List<String> sourcesOf(String name) {
-        List<String> result = new ArrayList<>(storeList.size());
+    public List<Source> sourcesOf(String name) {
+        List<Source> result = new ArrayList<>(storeList.size());
         for (Store store : storeList) {
             if (store.get(name) != null) {
-                result.add(store.toString());
+                result.add(new DebuggableSource(store, name));
             }
         }
         return result;
@@ -103,9 +139,23 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         String get(String key);
 
         void putAllToMap(Map<String, String> map);
+
+        SourceConfigurationLocationException stackWhenConfigured();
     }
 
-    private static class ClasspathPropertiesStore implements Store {
+    private abstract static class AbstractStore implements Store {
+        private final SourceConfigurationLocationException location;
+
+        AbstractStore(int i) {
+            this.location = new SourceConfigurationLocationException(i);
+        }
+
+        public SourceConfigurationLocationException stackWhenConfigured() {
+            return location;
+        }
+    }
+
+    private static class ClasspathPropertiesStore extends AbstractStore {
         private final String resourcePath;
         private final Map<String, String> propertyByName = new LinkedHashMap<>();
 
@@ -124,6 +174,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         }
 
         private ClasspathPropertiesStore(String resourcePath) {
+            super(4);
             this.resourcePath = resourcePath;
 
             // If classpath resource exists, read it
@@ -172,11 +223,12 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         }
     }
 
-    private static class FilesystemPropertiesStore implements Store {
+    private static class FilesystemPropertiesStore extends AbstractStore {
         private final String resourcePath;
         private final Map<String, String> propertyByName = new LinkedHashMap<>();
 
         private FilesystemPropertiesStore(String resourcePath) {
+            super(4);
             this.resourcePath = resourcePath;
 
             // If file exists, override configuration
@@ -223,10 +275,11 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         }
     }
 
-    private static class EnvironmentStore implements Store {
+    private static class EnvironmentStore extends AbstractStore {
         private final String prefix;
 
         private EnvironmentStore(String prefix) {
+            super(4);
             this.prefix = prefix;
         }
 
@@ -262,8 +315,9 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         }
     }
 
-    private static class SystemPropertiesStore implements Store {
+    private static class SystemPropertiesStore extends AbstractStore {
         private SystemPropertiesStore() {
+            super(4);
         }
 
         public String get(String key) {
@@ -306,10 +360,11 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         return Objects.hash(storeList);
     }
 
-    private static class MapStore implements Store {
+    private static class MapStore extends AbstractStore {
         final Map<String, String> valueByKey = new LinkedHashMap<>();
 
-        private MapStore(Map<String, String> map) {
+        private MapStore(Map<String, String> map, int i) {
+            super(4 + i);
             valueByKey.putAll(map);
         }
 
@@ -399,7 +454,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
         @Override
         public ApplicationProperties.Builder map(Map<String, String> map) {
-            storeList.addFirst(new MapStore(map));
+            storeList.addFirst(new MapStore(map, 0));
             return this;
         }
 
@@ -440,7 +495,8 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
                 @Override
                 public ApplicationProperties.Builder end() {
-                    return map(map);
+                    storeList.addFirst(new MapStore(map, 1));
+                    return Builder.this;
                 }
             };
         }
