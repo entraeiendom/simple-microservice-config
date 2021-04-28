@@ -7,12 +7,30 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Read environment variables from classpath, local config and environment.
+ * An efficient configuration class for building an immutable property-map based on different property sources. It is
+ * guaranteed that any successful call to {@link Builder#buildAndSetStaticSingleton()} "happens-before" any subsequent
+ * calls from any other thread to {@link #getInstance()}. Calls to {@link #map()} or {@link #get(String)} or any other
+ * method for extracting effective property values are only reading from effective read-only data-structures and hence
+ * do not need to be synchronized and are not synchronized internally by classes that implement this interface. So the
+ * only cost of extracting property values using instances of this interface is one read operation to a
+ * {@link java.util.LinkedHashMap} wrapped with a {@link Collections#unmodifiableMap(Map)}.
  */
 public interface ApplicationProperties {
 
+    /**
+     * Get a map containing all effective properties. The returned map is immutable, and any attempts to mutate it will
+     * result a runtime-exception.
+     *
+     * @return an immutable map with all effective properties.
+     */
     Map<String, String> map();
 
+    /**
+     * Get the effective value of the property with the given name.
+     *
+     * @param name
+     * @return the effective value
+     */
     String get(String name);
 
     /**
@@ -109,6 +127,11 @@ public interface ApplicationProperties {
                 .filesystemPropertiesFile("local_override.properties");
     }
 
+    /**
+     * The order of property sources specified when using methods in this builder is significant for resolving effective
+     * values of properties from the {@link ApplicationProperties} instance that is built. Sources configured later are
+     * always used before an earlier configured source when resolving property values.
+     */
     interface Builder {
 
         Builder expectedProperties(Class... expectedApplicationProperties);
