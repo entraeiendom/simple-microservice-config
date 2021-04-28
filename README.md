@@ -20,7 +20,7 @@ As the first step in your application (or just after log-setup), run the builder
 
 ```java
 
-ApplicationProperties.builderWithDefaultSources()         // 1.
+ApplicationProperties.builderWithDefaults()               // 1.
         .withExpectedProperties(                          // 2. 
                 MainProperties.class,                     // 3.
                 ServicesProperties.class)                 // 4.  

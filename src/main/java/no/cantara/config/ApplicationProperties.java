@@ -88,7 +88,7 @@ public interface ApplicationProperties {
         return new StoreBasedApplicationProperties.Builder();
     }
 
-    static Builder builderWithDefaultSources() {
+    static Builder builderWithDefaults() {
         return new StoreBasedApplicationProperties.Builder()
                 .classpathPropertiesFile("application.properties")
                 .filesystemPropertiesFile("local_override.properties");
