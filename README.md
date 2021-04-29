@@ -65,6 +65,18 @@ Config.builder()
     .build()
 ```
 
+## Unix Environment Varables
+
+Java and Unix/Posix has two different conventions to key's.
+Java: key.name=value
+Unix: KEY_NAME=value or key_name=value
+
+Java's approach is used in properties files. 
+Unix's is most often used in runtime environment. This is also default in Docker, Kubernetes and other cloud environments.
+As runtime config has presedence over config files "property-config" will attept to replace "key.name" with "key_name". 
+When no value is found, the library falls back to using "key.name".
+
+
 
 
 

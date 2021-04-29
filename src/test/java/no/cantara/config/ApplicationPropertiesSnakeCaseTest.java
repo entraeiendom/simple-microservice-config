@@ -15,9 +15,8 @@ public class ApplicationPropertiesSnakeCaseTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(BASE_URL,"http-value");
+        System.setProperty("base_url","http-value");
         ApplicationPropertiesTestHelper.resetApplicationProperties();
-//        ApplicationProperties.builderWithDefaults().build();
         ApplicationProperties.builderWithDefaults()
                 .property("JAVA_HOME", "/usr/lib/jvm/java-14-openjdk-amd64")
                 .enableSystemProperties()
@@ -30,8 +29,9 @@ public class ApplicationPropertiesSnakeCaseTest {
     @Test
     public void snakeCaseEnvironment() {
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
-        assertEquals("http-value", applicationProperties.get("BASE_URL"));
+
         assertEquals("http-value",applicationProperties.get(BASE_URL));
+        assertEquals("http-value", applicationProperties.get("base_url"));
         assertEquals("from application properties", applicationProperties.get("SNAKE_CASE_TEST"));
         assertEquals("from application properties", applicationProperties.get(SNAKE_CASE_TEST));
     }
