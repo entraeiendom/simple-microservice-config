@@ -21,9 +21,9 @@ As the first step in your application (or just after log-setup), run the builder
 ```java
 
 ApplicationProperties.builderWithDefaults()               // 1.
-        .withExpectedProperties(                          // 2. 
+        .expectedProperties(                              // 2. 
                 MainProperties.class,                     // 3.
-                ServicesProperties.class)                 // 4.  
+                ServiceProperties.class)                  // 4.  
         .buildAndSetStaticSingleton();                    // 5.
 
 ```
