@@ -147,7 +147,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         private final String resourcePath;
         private final Map<String, String> propertyByName = new LinkedHashMap<>();
 
-        private Iterable<URL> getPropertyResources() {
+        private List<URL> getPropertyResources() {
             List<URL> resources = new ArrayList<>();
             Enumeration<URL> classPathResources;
             try {
@@ -166,8 +166,9 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
             this.resourcePath = resourcePath;
 
             // If classpath resource exists, read it
-            Iterable<URL> classPathResources = getPropertyResources();
-            classPathResources.forEach(classPathResource -> {
+            List<URL> classPathResources = getPropertyResources();
+            for (int i = classPathResources.size() - 1; i >= 0; i--) {
+                URL classPathResource = classPathResources.get(i);
                 Properties properties = new Properties();
                 try {
                     URLConnection urlConnection = classPathResource.openConnection();
@@ -180,7 +181,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
                 for (Map.Entry<Object, Object> e : properties.entrySet()) {
                     propertyByName.put((String) e.getKey(), (String) e.getValue());
                 }
-            });
+            }
         }
 
         public String get(String key) {
