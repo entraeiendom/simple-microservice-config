@@ -1,96 +1,242 @@
 package no.cantara.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.function.Function;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-import static org.slf4j.LoggerFactory.getLogger;
-
 /**
- * Read environment variables from classpath, local config and environment.
+ * An efficient configuration class for building an immutable property-map based on different property sources. It is
+ * guaranteed that any successful call to {@link Builder#buildAndSetStaticSingleton()} "happens-before" any subsequent
+ * calls from any other thread to {@link #getInstance()}. Calls to {@link #map()} or {@link #get(String)} or any other
+ * method for extracting effective property values are only reading from effective read-only data-structures and hence
+ * do not need to be synchronized and are not synchronized internally by classes that implement this interface. So the
+ * only cost of extracting property values using instances of this interface is one read operation to a
+ * {@link java.util.LinkedHashMap} wrapped with a {@link Collections#unmodifiableMap(Map)}.
  */
-public class ApplicationProperties {
-    private static final Logger log = getLogger(ApplicationProperties.class);
-    private final Map<String, String> envVariables;
-    private Properties properties;
-    private Optional<Set<String>> expectedApplicationProperties;
-    private static ApplicationProperties singleton;
+public interface ApplicationProperties {
 
-    private ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties) {
-        this.expectedApplicationProperties = expectedApplicationProperties;
-        this.properties = properties;
-        envVariables = Collections.emptyMap();
+    /**
+     * Get a map containing all effective properties. The returned map is immutable, and any attempts to mutate it will
+     * result a runtime-exception.
+     *
+     * @return an immutable map with all effective properties.
+     */
+    Map<String, String> map();
+
+    /**
+     * Get the effective value of the property with the given name.
+     *
+     * @param name
+     * @return the effective value
+     */
+    String get(String name);
+
+    /**
+     * Get the all configuration sources that provide a value for the given property. The first value in the returned
+     * list is the effective value of the property. The next value in the list is the value that would have been the
+     * effective value if the source of the first value in the list had not been used, and so on.
+     * <p>
+     * The intended use for this tool is debugging of configuration issues. It is not intended to be used by application
+     * logic to differentiate on configuration.
+     *
+     * @param name the name of the property to get the sources of.
+     * @return a list (possibly empty) of all the sources that provide values for the property with the given name.
+     */
+    List<Source> sourcesOf(String name);
+
+    interface Source {
+        String propertyName();
+
+        String propertyValue();
+
+        String description();
+
+        SourceConfigurationLocationException stackTraceElement();
     }
 
-
-    private <T> ApplicationProperties(Properties properties, Optional<Set<String>> expectedApplicationProperties, Map<String, String> envVariables) {
-        this.expectedApplicationProperties = expectedApplicationProperties;
-        this.properties = properties;
-        this.envVariables = envVariables;
+    /**
+     * Return a string suitable for debugging sources of all properties. If the parameter to debug overridden sources
+     * is set, then all sources of a property is printed in string, otherwise only effective source for any given
+     * property is printed.
+     *
+     * @param debugOverriddenSources whether to include non-effective sources for debugged properties
+     * @return a string that can be read by humans for debugging source configuration of properties.
+     */
+    default String debugAll(boolean debugOverriddenSources) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> property : map().entrySet()) {
+            DebugUtils.debugSources(sourcesOf(property.getKey()), debugOverriddenSources, sb);
+        }
+        return sb.toString();
     }
 
-    public static ApplicationProperties getInstance() {
-        if (singleton == null) {
+    default String get(String name, String defaultValue) {
+        String value = get(name);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    default int asInt(String name) {
+        String value = get(name);
+        return Integer.parseInt(value);
+    }
+
+    default int asInt(String name, int defaultValue) {
+        String value = get(name);
+        if (value != null) {
+            return Integer.parseInt(value);
+        }
+        return defaultValue;
+    }
+
+    default long asLong(String name) {
+        String value = get(name);
+        return Long.parseLong(value);
+    }
+
+    default long asLong(String name, long defaultValue) {
+        String value = get(name);
+        if (value != null) {
+            return Long.parseLong(value);
+        }
+        return defaultValue;
+    }
+
+    default boolean asBoolean(String name) {
+        String value = get(name);
+        return Boolean.parseBoolean(value);
+    }
+
+    default boolean asBoolean(String name, boolean defaultValue) {
+        String value = get(name);
+        if (value != null) {
+            return Boolean.parseBoolean(value);
+        }
+        return defaultValue;
+    }
+
+    default double asDouble(String name) {
+        String value = get(name);
+        return Double.parseDouble(value);
+    }
+
+    default double asDouble(String name, double defaultValue) {
+        String value = get(name);
+        if (value != null) {
+            return Double.parseDouble(value);
+        }
+        return defaultValue;
+    }
+
+    default String logObfuscatedProperties() {
+        return logObfuscatedProperties(map());
+    }
+
+    static ApplicationProperties getInstance() {
+        if (ApplicationPropertiesRepo.theInstance() == null) {
             throw new IllegalStateException("Cannot get ApplicationProperties-instance prior to Builder.init()");
         }
-        return singleton;
+        return ApplicationPropertiesRepo.theInstance();
     }
 
+    static Builder builder() {
+        return new StoreBasedApplicationProperties.Builder();
+    }
 
-    public void validate() {
-        if (expectedApplicationProperties.isPresent()) {
-            log.info("*********************");
-            log.info("The application has resolved the following properties");
-            log.info(logObfuscatedProperties());
-            log.info("*********************");
-            final Set<String> expectedKeys = expectedApplicationProperties.get();
-            final List<String> undefinedProperties = expectedKeys.stream().filter(expectedPropertyName -> !properties.containsKey(expectedPropertyName)).collect(toList());
-            if (!undefinedProperties.isEmpty()) {
-                final String message = "Expected properties is not loaded " + undefinedProperties;
-                log.error(message);
-                throw new RuntimeException(message);
-            }
-            final List<String> undefinedValues = expectedKeys.stream()
-                    .filter(expectedPropertyName ->
-                            properties.getProperty(expectedPropertyName) == null || properties.getProperty(expectedPropertyName).isEmpty()
-                    ).collect(toList());
-            if (!undefinedValues.isEmpty()) {
-                final String message = "Expected properties is defined without value " + undefinedValues;
-                log.error(message);
-                throw new RuntimeException(message);
-            }
-            final List<String> additionalProperties = properties.stringPropertyNames().stream().filter(s -> !expectedKeys.contains(s)).collect(toList());
-            if (!additionalProperties.isEmpty()) {
-                log.warn("The following properties are loaded but not defined as expected for the application {}", additionalProperties);
+    static Builder builderWithDefaults() {
+        return new StoreBasedApplicationProperties.Builder()
+                .classpathPropertiesFile("application.properties")
+                .filesystemPropertiesFile("local_override.properties");
+    }
+
+    /**
+     * The order of property sources specified when using methods in this builder is significant for resolving effective
+     * values of properties from the {@link ApplicationProperties} instance that is built. Sources configured later are
+     * always used before an earlier configured source when resolving property values.
+     */
+    interface Builder {
+
+        Builder expectedProperties(Class... expectedApplicationProperties);
+
+        Builder classpathPropertiesFile(String resourcePath);
+
+        Builder filesystemPropertiesFile(String resourcePath);
+
+        Builder map(Map<String, String> map);
+
+        Builder enableEnvironmentVariables(String prefix);
+
+        Builder enableSystemProperties();
+
+        default Builder property(String name, String value) {
+            return values()
+                    .put(name, value)
+                    .end();
+        }
+
+        ValueBuilder values();
+
+        interface ValueBuilder {
+            ValueBuilder put(String name, String value);
+
+            default ValueBuilder put(String name, int value) {
+                put(name, String.valueOf(value));
+                return this;
             }
 
-        } else {
-            throw new IllegalStateException("Expected application properties is not defined and as such cannot be validated");
+            default ValueBuilder put(String name, long value) {
+                put(name, String.valueOf(value));
+                return this;
+            }
+
+            default ValueBuilder put(String name, double value) {
+                put(name, String.valueOf(value));
+                return this;
+            }
+
+            default ValueBuilder put(String name, boolean value) {
+                put(name, String.valueOf(value));
+                return this;
+            }
+
+            Builder end();
+        }
+
+        /**
+         * Builds this builder producing an {@link ApplicationProperties} instance.
+         *
+         * @return the built {@link ApplicationProperties} instance.
+         */
+        ApplicationProperties build();
+
+        /**
+         * Builds this builder by calling {@link #build()} to produce an {@link ApplicationProperties} instance which is
+         * then assigned to the static singleton reference that can be retrieved by calling
+         * {@link ApplicationProperties#getInstance()}.
+         *
+         * @return the {@link ApplicationProperties} instance built by calling the {@link #build()} method.
+         * @throws StaticSingletonAlreadyInitializedException if the static singleton is already set before this method
+         *                                                    was called.
+         */
+        default ApplicationProperties buildAndSetStaticSingleton() throws StaticSingletonAlreadyInitializedException {
+            if (ApplicationPropertiesRepo.theInstance() != null) {
+                throw new StaticSingletonAlreadyInitializedException();
+            }
+            ApplicationProperties instance = build();
+            ApplicationPropertiesRepo.initInstance(instance);
+            return instance;
         }
     }
 
-    public String get(String name) {
-        return properties.getProperty(name);
-    }
-
-    public Map<String, String> getMap() {
-        return properties.entrySet().stream().collect(
-                Collectors.toMap(
-                        e -> String.valueOf(e.getKey()),
-                        e -> String.valueOf(e.getValue()),
-                        (prev, next) -> next, HashMap::new
-                ));
-    }
-
-    public String logObfuscatedProperties() {
-        final Map<Object, Object> obfuscatedProperties = properties.entrySet().stream().map(
-                (Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>>) entry -> {
-                    final String key = (String) entry.getKey();
-                    final String value = (String) entry.getValue();
+    static String logObfuscatedProperties(Map<String, String> properties) {
+        final Map<String, String> obfuscatedProperties = properties.entrySet().stream().map(
+                entry -> {
+                    final String key = entry.getKey();
+                    final String value = entry.getValue();
                     final boolean isSecret = key.contains("secret") || key.contains("token") || key.contains("password");
                     if (isSecret) {
                         if (value.length() > 10) {
@@ -99,101 +245,11 @@ public class ApplicationProperties {
                         } else {
                             return new AbstractMap.SimpleEntry<>(key, "******");
                         }
-
                     } else {
                         return entry;
                     }
                 }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return obfuscatedProperties.toString();
-    }
-
-    public interface Builder {
-
-        static ApplicationProperties.Builder builder() {
-            return new BuilderImpl();
-        }
-
-        Builder withExpectedProperties(Class... expectedApplicationProperties);
-
-        Builder withProperties(Properties properties);
-
-        Builder enableEnvironmentVariables();
-
-        Builder setProperty(String key, String value);
-
-        void init();
-
-    }
-
-    public static class BuilderImpl implements ApplicationProperties.Builder {
-
-        private final Logger log = LoggerFactory.getLogger(BuilderImpl.class);
-
-        private Properties properties;
-        private Set<String> expectedApplicationProperties;
-        private boolean enableEnvironmentVariables;
-
-        public BuilderImpl() {
-            enableEnvironmentVariables = false;
-            properties = new Properties();
-        }
-
-        @Override
-        public ApplicationProperties.Builder withExpectedProperties(Class... expectedApplicationProperties) {
-            final Set<String> propertyNames = Arrays.stream(expectedApplicationProperties)
-                    .map(aClass -> {
-                        final Set<String> fields = Arrays.stream(aClass.getDeclaredFields())
-                                .filter(field -> field.getType() == String.class)
-                                .map(field -> {
-                                    try {
-                                        return (String) field.get(null);
-                                    } catch (IllegalAccessException e) {
-                                        log.info("Field with name {} is non-accessible", field.getName());
-                                        return "";
-                                    }
-                                }).filter(s -> !s.isEmpty())
-                                .collect(Collectors.toSet());
-                        return fields;
-                    }).flatMap(Collection::stream)
-                    .collect(Collectors.toSet());
-            this.expectedApplicationProperties = propertyNames;
-            return this;
-        }
-
-        @Override
-        public ApplicationProperties.Builder withProperties(Properties properties) {
-            this.properties = properties;
-            return this;
-        }
-
-        @Override
-        public ApplicationProperties.Builder enableEnvironmentVariables() {
-            throw new RuntimeException("Environment variables not supported at the moment");
-        }
-
-        @Override
-        public ApplicationProperties.Builder setProperty(String key, String value) {
-            properties.setProperty(key, value);
-            return this;
-        }
-
-        @Override
-        public synchronized void init() {
-            if (singleton != null) {
-                throw new IllegalStateException("Cannon initialize ApplicationProperties-singelton twice");
-            }
-            ApplicationProperties applicationProperties;
-            final Optional<Set<String>> expectedApplicationProperties = Optional.ofNullable(this.expectedApplicationProperties);
-            if (enableEnvironmentVariables) {
-                applicationProperties = new ApplicationProperties(properties, expectedApplicationProperties);
-            } else {
-                applicationProperties = new ApplicationProperties(properties, expectedApplicationProperties, System.getenv());
-            }
-            if (expectedApplicationProperties.isPresent()) {
-                applicationProperties.validate();
-            }
-            singleton = applicationProperties;
-        }
     }
 }
 

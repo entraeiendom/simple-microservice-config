@@ -8,71 +8,54 @@ import org.junit.Test;
 public class ApplicationPropertiesValidationTest {
 
     @Before
-    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void resetSingleton() {
         ApplicationPropertiesTestHelper.resetApplicationProperties();
     }
 
 
-    @Test(expected = IllegalStateException.class)
-    public void shouldThrowExeptionWhenValidationWithoutExpectedProperties() {
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty("base.url", "http-value")
-                .init();
-        final ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
-        applicationProperties.validate();
-
-
-    }
-
     @Test
     public void shouldValidateExpectedProperties() {
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty("base.url", "http-value")
-                .withExpectedProperties(ApiExpectedApplicationProperties.class)
-                .init();
+        ApplicationProperties.builder()
+                .property("base.url", "http-value")
+                .expectedProperties(ApiExpectedApplicationProperties.class)
+                .buildAndSetStaticSingleton();
 
     }
 
     @Test
     public void shouldAcceptNonExpectedProperties() {
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty("base.url", "http-value")
-                .setProperty("second.base.url", "another-http-value")
-                .withExpectedProperties(ApiExpectedApplicationProperties.class)
-                .init();
+        ApplicationProperties.builder()
+                .property("base.url", "http-value")
+                .property("second.base.url", "another-http-value")
+                .expectedProperties(ApiExpectedApplicationProperties.class)
+                .buildAndSetStaticSingleton();
     }
 
     @Test(expected = RuntimeException.class)
     public void exceptionOnMissingPropertyValue() {
-        ApplicationProperties.Builder
-                .builder()
-                .withProperties(ServiceConfig.loadProperties("blank.properties"))
-                .withExpectedProperties(MyExpectedApplicationProperties.class)
-                .init();
+        ApplicationProperties.builder()
+                .classpathPropertiesFile("blank.properties")
+                .expectedProperties(MyExpectedApplicationProperties.class)
+                .buildAndSetStaticSingleton();
 
     }
 
     @Test(expected = RuntimeException.class)
     public void exceptionOnMissingPropertyKey() {
-        ApplicationProperties.Builder
-                .builder()
-                .withExpectedProperties(MyExpectedApplicationProperties.class)
-                .init();
+        ApplicationProperties.builder()
+                .expectedProperties(MyExpectedApplicationProperties.class)
+                .buildAndSetStaticSingleton();
 
     }
 
 
     @Test
     public void doubleClassOfExpectedProperties() {
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty(MyExpectedApplicationProperties.POSTGRES_URL, "postgres-value")
-                .setProperty(ApiExpectedApplicationProperties.BASE_URL, "http-value")
-                .withExpectedProperties(MyExpectedApplicationProperties.class, ApiExpectedApplicationProperties.class)
-                .init();
+        ApplicationProperties.builder()
+                .property(MyExpectedApplicationProperties.POSTGRES_URL, "postgres-value")
+                .property(ApiExpectedApplicationProperties.BASE_URL, "http-value")
+                .expectedProperties(MyExpectedApplicationProperties.class, ApiExpectedApplicationProperties.class)
+                .buildAndSetStaticSingleton();
 
     }
 
@@ -82,7 +65,7 @@ public class ApplicationPropertiesValidationTest {
 
     }
 
-    public class ApiExpectedApplicationProperties  {
+    public class ApiExpectedApplicationProperties {
 
         public static final String BASE_URL = "base.url";
 

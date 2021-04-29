@@ -4,14 +4,15 @@ import no.cantara.config.testsupport.ApplicationPropertiesTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Properties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ApplicationPropertiesTest {
 
     @Before
-    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void resetSingleton() {
         ApplicationPropertiesTestHelper.resetApplicationProperties();
     }
 
@@ -19,70 +20,74 @@ public class ApplicationPropertiesTest {
 
     @Test
     public void shouldGetPropertiesWithSingleProperty() {
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty("base.url", "http-value")
-                .init();
+        ApplicationProperties.builder()
+                .property("base.url", "http-value")
+                .buildAndSetStaticSingleton();
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("base.url")).isEqualTo("http-value");
 
-        assertThat(applicationProperties.getMap()).containsEntry("base.url", "http-value");
+        assertThat(applicationProperties.map()).containsEntry("base.url", "http-value");
 
     }
 
     @Test
     public void shouldGetPropertiesWithPropertiesSet() {
-        final Properties properties = getProperties("first.key", "first.value");
-        properties.setProperty("second.key", "second.value");
-        ApplicationProperties.Builder
-                .builder()
-                .withProperties(properties)
-                .init();
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("first.key", "first.value");
+        map.put("second.key", "second.value");
+        ApplicationProperties.builder()
+                .map(map)
+                .buildAndSetStaticSingleton();
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
 
-        assertThat(applicationProperties.getMap())
+        assertThat(applicationProperties.map())
                 .containsEntry("first.key", "first.value")
                 .containsEntry("second.key", "second.value")
                 .hasSize(2);
     }
 
     @Test
-    public void orderMatters_withPropertiesOverridesAll() {
-        final Properties properties = getProperties("first.key", "first.value");
-        properties.setProperty("second.key", "second.value");
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty("first.property", "first.value")
-                .withProperties(properties)
-                .init();
+    public void orderMatters_withMapOverridesOnlyMatchingProperties() {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("first.key", "first.value");
+        map.put("second.key", "second.value");
+        map.put("third.key", "third.value");
+        ApplicationProperties.builder()
+                .property("first.property", "original.first.value")
+                .property("third.key", "original.third.value")
+                .map(map)
+                .buildAndSetStaticSingleton();
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
-        assertThat(applicationProperties.get("first.property")).isNull();
+        assertThat(applicationProperties.get("third.key")).isEqualTo("third.value");
+        assertThat(applicationProperties.get("first.property")).isEqualTo("original.first.value");
 
-        assertThat(applicationProperties.getMap())
+        assertThat(applicationProperties.map())
                 .containsEntry("first.key", "first.value")
                 .containsEntry("second.key", "second.value")
-                .hasSize(2);
+                .containsEntry("third.key", "third.value")
+                .containsEntry("first.property", "original.first.value")
+                .hasSize(4);
     }
 
     @Test
     public void orderMatters_withPropertyAdds() {
-        final Properties properties = getProperties("first.key", "first.value");
-        properties.setProperty("second.key", "second.value");
-        ApplicationProperties.Builder
-                .builder()
-                .withProperties(properties)
-                .setProperty("last.property", "last.value")
-                .init();
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("first.key", "first.value");
+        map.put("second.key", "second.value");
+        ApplicationProperties.builder()
+                .map(map)
+                .property("last.property", "last.value")
+                .buildAndSetStaticSingleton();
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("second.value");
         assertThat(applicationProperties.get("last.property")).isEqualTo("last.value");
 
-        assertThat(applicationProperties.getMap())
+        assertThat(applicationProperties.map())
                 .containsEntry("first.key", "first.value")
                 .containsEntry("second.key", "second.value")
                 .containsEntry("last.property", "last.value")
@@ -91,21 +96,18 @@ public class ApplicationPropertiesTest {
 
     @Test
     public void orderMatters_withPropertyCanOverride() {
-        final Properties properties = getProperties("first.key", "first.value");
-        properties.setProperty("second.key", "second.value");
-        ApplicationProperties.Builder
-                .builder()
-                .withProperties(properties)
-                .setProperty("second.key", "different.value")
-                .init();
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("first.key", "first.value");
+        map.put("second.key", "second.value");
+        ApplicationProperties.builder()
+                .map(map)
+                .property("second.key", "different.value")
+                .buildAndSetStaticSingleton();
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.get("first.key")).isEqualTo("first.value");
         assertThat(applicationProperties.get("second.key")).isEqualTo("different.value");
 
-        final Properties resolved = new Properties(properties);
-        resolved.setProperty("first.key", "first.value");
-        resolved.setProperty("second.key", "different.value");
-        assertThat(applicationProperties.getMap())
+        assertThat(applicationProperties.map())
                 .containsEntry("first.key", "first.value")
                 .containsEntry("second.key", "different.value")
                 .hasSize(2);
@@ -116,16 +118,15 @@ public class ApplicationPropertiesTest {
         final String longSecret = "youshouldnotseeme";
         final String shortSecret = "10tokensxx";
         final String publicValue = "an-url";
-        ApplicationProperties.Builder
-                .builder()
-                .setProperty("base", publicValue)
-                .setProperty("secret_so_much", longSecret)
-                .setProperty("a.secret", longSecret)
-                .setProperty("secret_so_much", longSecret)
-                .setProperty("postgres.password", longSecret)
-                .setProperty("slack_token", longSecret)
-                .setProperty("token_short", shortSecret)
-                .init();
+        ApplicationProperties.builder()
+                .property("base", publicValue)
+                .property("secret_so_much", longSecret)
+                .property("a.secret", longSecret)
+                .property("secret_so_much", longSecret)
+                .property("postgres.password", longSecret)
+                .property("slack_token", longSecret)
+                .property("token_short", shortSecret)
+                .buildAndSetStaticSingleton();
         ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
         assertThat(applicationProperties.logObfuscatedProperties())
                 .doesNotContain(longSecret)
@@ -135,9 +136,9 @@ public class ApplicationPropertiesTest {
                 .contains("token_short=******");
     }
 
-    private Properties getProperties(String key, String value) {
-        final Properties properties = new Properties();
-        properties.setProperty(key, value);
+    private Map<String, String> getProperties(String key, String value) {
+        final Map<String, String> properties = new LinkedHashMap<>();
+        properties.put(key, value);
         return properties;
     }
 }

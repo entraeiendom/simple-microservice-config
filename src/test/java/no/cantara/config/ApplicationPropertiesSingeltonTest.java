@@ -10,7 +10,7 @@ public class ApplicationPropertiesSingeltonTest {
 
 
     @Before
-    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void resetSingleton() {
         ApplicationPropertiesTestHelper.resetApplicationProperties();
     }
 
@@ -23,7 +23,7 @@ public class ApplicationPropertiesSingeltonTest {
 
     @Test
     public void isSameObject() {
-        ApplicationProperties.Builder.builder().setProperty("a", "value").init();
+        ApplicationProperties.builder().property("a", "value").buildAndSetStaticSingleton();
         assertThat(ApplicationProperties.getInstance()).isSameAs(ApplicationProperties.getInstance());
     }
 
