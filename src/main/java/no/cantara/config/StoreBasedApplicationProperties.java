@@ -305,18 +305,26 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
     }
 
     private static class SystemPropertiesStore extends AbstractStore {
-        private SystemPropertiesStore() {
+        private final String prefix;
+
+        private SystemPropertiesStore(String prefix) {
             super(4);
+            this.prefix = prefix;
         }
 
         public String get(String key) {
-            return System.getProperty(key);
+            return System.getProperty(prefix + key);
         }
 
         @Override
         public void putAllToMap(Map<String, String> map) {
             for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
-                map.put((String) entry.getKey(), (String) entry.getValue());
+                if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
+                    if (((String) entry.getKey()).startsWith(prefix)) {
+                        String strippedKey = ((String) entry.getKey()).substring(prefix.length());
+                        map.put(strippedKey, (String) entry.getValue());
+                    }
+                }
             }
         }
 
@@ -467,7 +475,13 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
         @Override
         public ApplicationProperties.Builder enableSystemProperties() {
-            storeList.addFirst(new SystemPropertiesStore());
+            storeList.addFirst(new SystemPropertiesStore(""));
+            return this;
+        }
+
+        @Override
+        public ApplicationProperties.Builder enableSystemProperties(String prefix) {
+            storeList.addFirst(new SystemPropertiesStore(prefix));
             return this;
         }
 
