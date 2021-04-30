@@ -1,50 +1,84 @@
 package no.cantara.config;
 
-import no.cantara.config.testsupport.ApplicationPropertiesTestHelper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import static no.cantara.config.ApplicationPropertiesSnakeCaseTest.ApiExpectedApplicationProperties.BASE_URL;
-import static no.cantara.config.ApplicationPropertiesSnakeCaseTest.ApiExpectedApplicationProperties.SNAKE_CASE_TEST;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class ApplicationPropertiesSnakeCaseTest {
 
+    @Test
+    public void thatEnvironmentVariableWithoutEscapingCanOverrideProperty() {
+        /*
+         * In order to verify that environment-variables work, modify the environment of the test-runner
+         * by inserting the environment variable 'base_url' with a value of 'overload' (anything except 'underscore'
+         * will work) then observe that the test fails which confirms that environment variable overrides are working.
+         */
+        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+                .property("base_url", "underscore")
+                .enableEnvironmentVariablesWithoutEscaping()
+                .build();
 
-    @Before
-    public void setUp() throws Exception {
-        System.setProperty("base_url","http-value");
-        ApplicationPropertiesTestHelper.resetApplicationProperties();
-        ApplicationProperties.builderWithDefaults()
-                .property("JAVA_HOME", "/usr/lib/jvm/java-14-openjdk-amd64")
-                .enableSystemProperties()
-                .enableEnvironmentVariables("")
-                .expectedProperties(ApiExpectedApplicationProperties.class)
-                .buildAndSetStaticSingleton();
-        
+        assertEquals("underscore", applicationProperties.get("base_url"));
     }
 
     @Test
-    public void snakeCaseEnvironment() {
-        ApplicationProperties applicationProperties = ApplicationProperties.getInstance();
+    public void thatEnvironmentVariablesDoWarnAboutNonOverrides() {
+        /*
+         * In order to verify that environment-variables are using the wrong override-mehtod, modify the environment of
+         * the test-runner by inserting the environment variable 'base_url' with a value of 'overload' (anything except
+         * 'underscore' will work) then observe that the test passes, but with a WARN logged from
+         * StoreBasedApplicationProperties with a message that you should use 'BASE_u_URL' to override the property.
+         */
+        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+                .property("base_url", "underscore")
+                .enableEnvironmentVariables()
+                .build();
 
-        assertEquals("http-value",applicationProperties.get(BASE_URL));
-        assertEquals("http-value", applicationProperties.get("base_url"));
-        assertEquals("from application properties", applicationProperties.get("SNAKE_CASE_TEST"));
-        assertEquals("from application properties", applicationProperties.get(SNAKE_CASE_TEST));
+        assertEquals("underscore", applicationProperties.get("base_url"));
     }
 
-    public class ApiExpectedApplicationProperties {
+    @Test
+    public void thatEnvironmentVariablesCanOverridePropertyWithUnderscore() {
+        /*
+         * In order to verify that environment-variables work, modify the environment of the test-runner
+         * by inserting the environment variable 'BASE_u_URL' with a value of 'overload' (anything except 'underscore'
+         * will work) then observe that the test fails which confirms that environment variable overrides are working.
+         */
+        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+                .property("base_url", "underscore")
+                .enableEnvironmentVariables()
+                .build();
 
-        public static final String BASE_URL = "base.url";
-        public static final String SNAKE_CASE_TEST = "SNAKE_CASE_TEST";
-
+        assertEquals("underscore", applicationProperties.get("base_url"));
     }
 
-    @After
-    public void tearDown() throws Exception {
-        ApplicationPropertiesTestHelper.resetApplicationProperties();
+    @Test
+    public void thatEnvironmentVariablesCanOverridePropertyWithDot() {
+        /*
+         * In order to verify that environment-variables work, modify the environment of the test-runner
+         * by inserting the environment variable 'BASE_URL' with a value of 'overload' (anything except 'dot'
+         * will work) then observe that the test fails which confirms that environment variable overrides are working.
+         */
+        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+                .property("base.url", "dot")
+                .enableEnvironmentVariables()
+                .build();
+
+        assertEquals("dot", applicationProperties.get("base.url"));
+    }
+
+    @Test
+    public void thatEnvironmentVariablesCanOverridePropertyWithDash() {
+        /*
+         * In order to verify that environment-variables work, modify the environment of the test-runner
+         * by inserting the environment variable 'BASE_d_URL' with a value of 'overload' (anything except 'dash'
+         * will work) then observe that the test fails which confirms that environment variable overrides are working.
+         */
+        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+                .property("base-url", "dash")
+                .enableEnvironmentVariables()
+                .build();
+
+        assertEquals("dash", applicationProperties.get("base-url"));
     }
 }
