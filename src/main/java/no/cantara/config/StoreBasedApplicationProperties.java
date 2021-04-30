@@ -59,15 +59,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
     @Override
     public String get(String name) {
-        String value = null;
-        if (name != null) {
-            String camel_case_key = name.replace(".", "_");
-            value = effectiveProperties.get(camel_case_key);
-            if (value == null || value.isEmpty()) {
-                value = effectiveProperties.get(name);
-            }
-        }
-        return value;
+        return effectiveProperties.get(name);
     }
 
     static class DebuggableSource implements Source {
