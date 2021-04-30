@@ -73,8 +73,25 @@ Unix: KEY_NAME=value or key_name=value
 
 Java's approach is used in properties files. 
 Unix's is most often used in runtime environment. This is also default in Docker, Kubernetes and other cloud environments.
-As runtime config has presedence over config files "property-config" will attept to replace "key.name" with "key_name". 
-When no value is found, the library falls back to using "key.name".
+
+Environment-variables as properties can be enabled through ApplicationProperties.Builder methods. If enabled without
+escaping, then environment-variable names are not treated as if they are escaped and will be used as-is as properties
+preserving everything including case. If enabled with escaping (default), then environment-variable names will be 
+treated as escaped according to the escaping rules.
+
+Escaping rules are applied in the following order:
+1. all letters become UPPERCASE
+1. `_` underscore becomes `_u_`
+1. `.` dot becomes `_`
+1. `-` dash becomes `_d_`
+
+Example 1: An application is has set the property `my.property=precious` in the `application.properties` file. At runtime
+the environment-variable `MY_PROPERTY=worthless` must be set in order to override the value of `my.property` within the
+application.
+
+Example 2: An application is has set the property `my-property=precious` in the `application.properties` file. At runtime
+the environment-variable `MY_d_PROPERTY=worthless` must be set in order to override the value of `my-property` within the
+application.
 
 
 
