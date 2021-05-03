@@ -11,12 +11,12 @@ class SystemPropertiesStore extends AbstractStore {
     }
 
     @Override
-    String doGet(String key) {
+    public String get(String key) {
         return System.getProperty(prefix + key);
     }
 
     @Override
-    void doPutAllToMap(Map<String, String> map) {
+    public void putAllToMap(Map<String, String> map) {
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
             if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
                 if (((String) entry.getKey()).startsWith(prefix)) {

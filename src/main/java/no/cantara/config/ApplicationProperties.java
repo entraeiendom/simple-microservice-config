@@ -190,6 +190,8 @@ public interface ApplicationProperties {
 
         Builder enableEnvironmentVariablesWithoutEscaping();
 
+        Builder envVarCasing(String name);
+
         Builder enableSystemProperties();
 
         Builder enableSystemProperties(String prefix);

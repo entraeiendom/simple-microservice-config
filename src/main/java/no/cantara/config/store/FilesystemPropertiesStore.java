@@ -39,12 +39,12 @@ class FilesystemPropertiesStore extends AbstractStore {
     }
 
     @Override
-    String doGet(String key) {
+    public String get(String key) {
         return propertyByName.get(key);
     }
 
     @Override
-    void doPutAllToMap(Map<String, String> map) {
+    public void putAllToMap(Map<String, String> map) {
         map.putAll(propertyByName);
     }
 

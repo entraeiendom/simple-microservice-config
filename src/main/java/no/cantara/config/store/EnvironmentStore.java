@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -12,13 +14,16 @@ class EnvironmentStore extends AbstractStore {
 
     private static final Logger log = getLogger(EnvironmentStore.class);
 
+    private final Set<String> casingSet;
+
     private final String prefix;
     private final boolean useEscaping;
 
-    EnvironmentStore(String prefix, boolean useEscaping) {
+    EnvironmentStore(String prefix, boolean useEscaping, Set<String> casingSet) {
         super(4);
         this.prefix = prefix;
         this.useEscaping = useEscaping;
+        this.casingSet = casingSet;
     }
 
     public String envVarToJavaProperty(String envVarKey) {
@@ -36,13 +41,22 @@ class EnvironmentStore extends AbstractStore {
     }
 
     @Override
-    String doGet(String key) {
-        String envKey = prefix + javaPropertyToEnvVar(key);
-        return System.getenv(envKey);
+    public String get(String key) {
+        if (!key.toLowerCase().equals(key)) {
+            // key has at least one uppercase letter
+            if (!casingSet.contains(key)) {
+                // no casing specified for key
+                return null;
+            }
+        }
+        String envKey = javaPropertyToEnvVar(key);
+        String value = System.getenv(envKey);
+        return value;
     }
 
     @Override
-    void doPutAllToMap(Map<String, String> map) {
+    public void putAllToMap(Map<String, String> map) {
+        Map<String, String> casingByLowercase = casingSet.stream().collect(Collectors.toMap(String::toLowerCase, k -> k));
         for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
             if (entry.getKey().startsWith(prefix)) {
                 String strippedEnvVarKey = entry.getKey().substring(prefix.length());
@@ -52,7 +66,8 @@ class EnvironmentStore extends AbstractStore {
                     }
                 }
                 String propKey = envVarToJavaProperty(strippedEnvVarKey);
-                map.put(propKey, entry.getValue());
+                String possiblyAliasedPropKey = casingByLowercase.getOrDefault(propKey, propKey);
+                map.put(possiblyAliasedPropKey, entry.getValue());
             }
         }
     }

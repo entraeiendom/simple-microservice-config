@@ -74,7 +74,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
     public static class Builder implements ApplicationProperties.Builder {
         final Deque<Store> storeList = new LinkedList<>();
         final Set<String> expectedApplicationProperties = new LinkedHashSet<>();
-        final Set<String> lowercaseAliases = new LinkedHashSet<>();
+        final Set<String> envVarCasingSet = new LinkedHashSet<>();
 
         private void validate(Map<String, String> properties) {
             if (expectedApplicationProperties.size() > 0) {
@@ -107,8 +107,8 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         }
 
         @Override
-        public ApplicationProperties.Builder aliasAsLowercase(String name) {
-            lowercaseAliases.add(name);
+        public ApplicationProperties.Builder envVarCasing(String name) {
+            envVarCasingSet.add(name);
             return this;
         }
 
@@ -154,19 +154,19 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariables() {
-            storeList.addFirst(new EnvironmentStore("", true));
+            storeList.addFirst(new EnvironmentStore("", true, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariables(String prefix) {
-            storeList.addFirst(new EnvironmentStore(prefix, true));
+            storeList.addFirst(new EnvironmentStore(prefix, true, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariablesWithoutEscaping() {
-            storeList.addFirst(new EnvironmentStore("", false));
+            storeList.addFirst(new EnvironmentStore("", false, envVarCasingSet));
             return this;
         }
 
