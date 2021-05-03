@@ -148,9 +148,23 @@ public interface ApplicationProperties {
     }
 
     static Builder builderWithDefaults() {
-        return new StoreBasedApplicationProperties.Builder()
+        return builder()
                 .classpathPropertiesFile("application.properties")
-                .filesystemPropertiesFile("local_override.properties");
+                .filesystemPropertiesFile("local_override.properties")
+                .enableSystemProperties()
+                .enableEnvironmentVariables();
+    }
+
+    static Builder builderWithTestDefaults() {
+        return builder()
+                .classpathPropertiesFile("application.properties")
+                .classpathPropertiesFile("test_override.properties")
+                .enableSystemProperties();
+    }
+
+    static Builder builderWithTestDefaultsAndEnvironmentVariables() {
+        return builderWithTestDefaults()
+                .enableEnvironmentVariables();
     }
 
     /**
