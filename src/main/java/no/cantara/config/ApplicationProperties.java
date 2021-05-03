@@ -196,11 +196,7 @@ public interface ApplicationProperties {
 
         Builder enableSystemProperties(String prefix);
 
-        default Builder property(String name, String value) {
-            return values()
-                    .put(name, value)
-                    .end();
-        }
+        Builder property(String name, String value);
 
         ValueBuilder values();
 

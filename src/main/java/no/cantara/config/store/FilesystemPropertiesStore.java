@@ -1,5 +1,7 @@
 package no.cantara.config.store;
 
+import no.cantara.config.SourceConfigurationLocationException;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,8 +20,8 @@ class FilesystemPropertiesStore extends AbstractStore {
     private final String resourcePath;
     private final Map<String, String> propertyByName = new LinkedHashMap<>();
 
-    FilesystemPropertiesStore(String resourcePath) {
-        super(3);
+    FilesystemPropertiesStore(SourceConfigurationLocationException location, String resourcePath) {
+        super(location);
         this.resourcePath = resourcePath;
 
         // If file exists, override configuration
@@ -50,7 +52,7 @@ class FilesystemPropertiesStore extends AbstractStore {
 
     @Override
     public String toString() {
-        return "Filesystem based source of properties with resource-path: '" + resourcePath + "'";
+        return "File '" + resourcePath + "'";
     }
 
     @Override

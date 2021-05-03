@@ -1,12 +1,14 @@
 package no.cantara.config.store;
 
+import no.cantara.config.SourceConfigurationLocationException;
+
 import java.util.Map;
 
 class SystemPropertiesStore extends AbstractStore {
     private final String prefix;
 
-    SystemPropertiesStore(String prefix) {
-        super(3);
+    SystemPropertiesStore(SourceConfigurationLocationException location, String prefix) {
+        super(location);
         this.prefix = prefix;
     }
 
@@ -29,7 +31,10 @@ class SystemPropertiesStore extends AbstractStore {
 
     @Override
     public String toString() {
-        return "SystemProperties based source";
+        if (prefix == null || prefix.isEmpty()) {
+            return "System-properties";
+        }
+        return "System-properties '" + prefix + "*'";
     }
 
     @Override

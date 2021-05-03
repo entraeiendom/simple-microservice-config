@@ -1,5 +1,7 @@
 package no.cantara.config.store;
 
+import no.cantara.config.SourceConfigurationLocationException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,8 +35,8 @@ class ClasspathPropertiesStore extends AbstractStore {
         return resources;
     }
 
-    ClasspathPropertiesStore(String resourcePath) {
-        super(3);
+    ClasspathPropertiesStore(SourceConfigurationLocationException location, String resourcePath) {
+        super(location);
         this.resourcePath = resourcePath;
 
         // If classpath resource exists, read it
@@ -68,7 +70,7 @@ class ClasspathPropertiesStore extends AbstractStore {
 
     @Override
     public String toString() {
-        return "Classpath based source of properties with resource-path: '" + resourcePath + "'";
+        return "Classpath '" + resourcePath + "'";
     }
 
     @Override

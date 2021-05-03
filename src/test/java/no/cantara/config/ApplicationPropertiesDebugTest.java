@@ -9,6 +9,23 @@ import java.util.Map;
 public class ApplicationPropertiesDebugTest {
 
     @Test
+    public void thatSourceOfValluesPropertyIsUnderstandableWhenDebugging() {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("first.key", "first.value");
+        map.put("second.key", "second.value");
+        map.put("third.key", "third.value");
+        ApplicationProperties instance = ApplicationProperties.builder()
+                .values()
+                .put("first.property", "original.first.value")
+                .put("third.key", "original.third.value")
+                .end()
+                .map(map)
+                .build();
+
+        System.out.printf("%s%n", instance.sourcesOf("third.key"));
+    }
+
+    @Test
     public void thatSourceOfSinglePropertyIsUnderstandableWhenDebugging() {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("first.key", "first.value");

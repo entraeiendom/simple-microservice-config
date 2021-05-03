@@ -5,8 +5,8 @@ import no.cantara.config.SourceConfigurationLocationException;
 abstract class AbstractStore implements Store {
     private final SourceConfigurationLocationException location;
 
-    AbstractStore(int i) {
-        this.location = new SourceConfigurationLocationException(i);
+    AbstractStore(SourceConfigurationLocationException location) {
+        this.location = location;
     }
 
     public SourceConfigurationLocationException stackWhenConfigured() {

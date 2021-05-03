@@ -1,5 +1,7 @@
 package no.cantara.config.store;
 
+import no.cantara.config.SourceConfigurationLocationException;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -7,8 +9,8 @@ import java.util.Objects;
 class MapStore extends AbstractStore {
     final Map<String, String> valueByKey = new LinkedHashMap<>();
 
-    MapStore(Map<String, String> map, int i) {
-        super(3 + i);
+    MapStore(SourceConfigurationLocationException location, Map<String, String> map, int i) {
+        super(location);
         valueByKey.putAll(map);
     }
 
@@ -24,7 +26,7 @@ class MapStore extends AbstractStore {
 
     @Override
     public String toString() {
-        return "Map based source";
+        return "Map";
     }
 
     @Override

@@ -1,6 +1,7 @@
 package no.cantara.config.store;
 
 import no.cantara.config.ApplicationProperties;
+import no.cantara.config.SourceConfigurationLocationException;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -136,69 +137,83 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
         @Override
         public ApplicationProperties.Builder map(Map<String, String> map) {
-            storeList.addFirst(new MapStore(map, 0));
+            storeList.addFirst(new MapStore(new SourceConfigurationLocationException(1), map, 0));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder classpathPropertiesFile(String resourcePath) {
-            storeList.addFirst(new ClasspathPropertiesStore(resourcePath));
+            storeList.addFirst(new ClasspathPropertiesStore(new SourceConfigurationLocationException(1), resourcePath));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder filesystemPropertiesFile(String resourcePath) {
-            storeList.addFirst(new FilesystemPropertiesStore(resourcePath));
+            storeList.addFirst(new FilesystemPropertiesStore(new SourceConfigurationLocationException(1), resourcePath));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariables() {
-            storeList.addFirst(new EnvironmentStore("", true, envVarCasingSet));
+            storeList.addFirst(new EnvironmentStore(new SourceConfigurationLocationException(1), "", true, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariables(String prefix) {
-            storeList.addFirst(new EnvironmentStore(prefix, true, envVarCasingSet));
+            storeList.addFirst(new EnvironmentStore(new SourceConfigurationLocationException(1), prefix, true, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariablesWithoutEscaping() {
-            storeList.addFirst(new EnvironmentStore("", false, envVarCasingSet));
+            storeList.addFirst(new EnvironmentStore(new SourceConfigurationLocationException(1), "", false, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableSystemProperties() {
-            storeList.addFirst(new SystemPropertiesStore(""));
+            storeList.addFirst(new SystemPropertiesStore(new SourceConfigurationLocationException(1), ""));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableSystemProperties(String prefix) {
-            storeList.addFirst(new SystemPropertiesStore(prefix));
+            storeList.addFirst(new SystemPropertiesStore(new SourceConfigurationLocationException(1), prefix));
             return this;
         }
 
         @Override
+        public ApplicationProperties.Builder property(String name, String value) {
+            return new ValueBuilderStore(new SourceConfigurationLocationException(1))
+                    .put(name, value)
+                    .end();
+        }
+
+        @Override
         public ValueBuilder values() {
-            return new ValueBuilder() {
-                final Map<String, String> map = new LinkedHashMap<>();
+            return new ValueBuilderStore(new SourceConfigurationLocationException(1));
+        }
 
-                @Override
-                public ValueBuilder put(String name, String value) {
-                    map.put(name, value);
-                    return this;
-                }
+        class ValueBuilderStore implements ValueBuilder {
+            final SourceConfigurationLocationException locationException;
+            final Map<String, String> map = new LinkedHashMap<>();
 
-                @Override
-                public ApplicationProperties.Builder end() {
-                    storeList.addFirst(new MapStore(map, 1));
-                    return Builder.this;
-                }
-            };
+            ValueBuilderStore(SourceConfigurationLocationException locationException) {
+                this.locationException = locationException;
+            }
+
+            @Override
+            public ValueBuilder put(String name, String value) {
+                map.put(name, value);
+                return this;
+            }
+
+            @Override
+            public ApplicationProperties.Builder end() {
+                storeList.addFirst(new MapStore(locationException, map, 1));
+                return Builder.this;
+            }
         }
 
         @Override
@@ -207,8 +222,6 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
             validate(applicationProperties.effectiveProperties);
             return applicationProperties;
         }
-
-
     }
 
     @Override

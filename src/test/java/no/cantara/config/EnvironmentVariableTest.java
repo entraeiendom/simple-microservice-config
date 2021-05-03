@@ -24,6 +24,7 @@ public class EnvironmentVariableTest {
         assertEquals("Set in env", instance.get("snake.case.test"));
         assertEquals(null, instance.get("SNAKE.CASE.TEST"));
         assertEquals(null, instance.get("SNAKE_CASE_TEST"));
+        System.out.printf("%s%n", instance.sourcesOf("snake.case.test"));
     }
 
     @Test
@@ -38,6 +39,7 @@ public class EnvironmentVariableTest {
         assertEquals("Set in env", instance.get("environment.variable"));
         assertEquals(null, instance.get("ENVIRONMENT.VARIABLE"));
         assertEquals(null, instance.get("ENVIRONMENT_VARIABLE"));
+        System.out.printf("%s%n", instance.sourcesOf("environment.variable"));
     }
 
     @Test
@@ -55,6 +57,7 @@ public class EnvironmentVariableTest {
             assertEquals(null, instance.get("IAMCAMELCASED"));
             assertEquals("Set in env", instance.get("iamcamelcased"));
             assertEquals("from application properties", instance.get("iAmCamelCased"));
+            System.out.printf("%s%n", instance.sourcesOf("iAmCamelCased"));
         }
 
         {
@@ -66,6 +69,7 @@ public class EnvironmentVariableTest {
             assertEquals(null, instance.get("IAMCAMELCASED"));
             assertEquals(null, instance.get("iamcamelcased"));
             assertEquals("Set in env", instance.get("iAmCamelCased"));
+            System.out.printf("%s%n", instance.sourcesOf("iAmCamelCased"));
         }
     }
 

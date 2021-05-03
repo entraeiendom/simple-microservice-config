@@ -1,6 +1,7 @@
 package no.cantara.config.store;
 
 import no.cantara.config.EnvironmentVariableEscaping;
+import no.cantara.config.SourceConfigurationLocationException;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -19,8 +20,8 @@ class EnvironmentStore extends AbstractStore {
     private final String prefix;
     private final boolean useEscaping;
 
-    EnvironmentStore(String prefix, boolean useEscaping, Set<String> casingSet) {
-        super(3);
+    EnvironmentStore(SourceConfigurationLocationException location, String prefix, boolean useEscaping, Set<String> casingSet) {
+        super(location);
         this.prefix = prefix;
         this.useEscaping = useEscaping;
         this.casingSet = casingSet;
@@ -74,7 +75,10 @@ class EnvironmentStore extends AbstractStore {
 
     @Override
     public String toString() {
-        return "Environment based source with prefix: '" + prefix + "'";
+        if (prefix == null || prefix.isEmpty()) {
+            return "Environment-variables";
+        }
+        return "Environment-variables '" + prefix + "*'";
     }
 
     @Override

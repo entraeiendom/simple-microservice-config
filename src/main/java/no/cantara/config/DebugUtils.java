@@ -24,9 +24,9 @@ public class DebugUtils {
                 sb.append(" ");
             }
             if (i == 0) {
-                sb.append("effective-source: ");
+                sb.append("effective: ");
             } else {
-                sb.append("other-source: ");
+                sb.append("other: ");
             }
             debugSource(sources.get(i), sb);
         }
@@ -39,9 +39,9 @@ public class DebugUtils {
     }
 
     public static void debugSource(ApplicationProperties.Source source, StringBuilder sb) {
-        sb.append("property: ").append(source.propertyName()).append("='").append(source.propertyValue())
-                .append("' -- by source: ").append(source.description())
-                .append(" -- configured at: ").append(source.stackTraceElement().getCodeLocation())
+        sb.append(source.propertyName()).append("='").append(source.propertyValue())
+                .append("', ").append(source.description())
+                .append(" at ").append(source.stackTraceElement().getCodeLocation())
                 .append("\n");
     }
 }
