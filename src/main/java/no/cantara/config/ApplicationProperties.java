@@ -1,5 +1,7 @@
 package no.cantara.config;
 
+import no.cantara.config.store.StoreBasedApplicationProperties;
+
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
