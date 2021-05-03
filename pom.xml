@@ -5,7 +5,7 @@
 
   <groupId>no.cantara.config</groupId>
   <artifactId>property-config</artifactId>
-  <version>0.3.2-SNAPSHOT</version>
+  <version>0.3.2-SNAPSHOT_snake_case</version>
   <packaging>jar</packaging>
 
   <developers>
