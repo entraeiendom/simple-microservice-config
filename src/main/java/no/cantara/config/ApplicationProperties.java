@@ -168,9 +168,15 @@ public interface ApplicationProperties {
 
         Builder map(Map<String, String> map);
 
+        Builder enableEnvironmentVariables();
+
         Builder enableEnvironmentVariables(String prefix);
 
+        Builder enableEnvironmentVariablesWithoutEscaping();
+
         Builder enableSystemProperties();
+
+        Builder enableSystemProperties(String prefix);
 
         default Builder property(String name, String value) {
             return values()
