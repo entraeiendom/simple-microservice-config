@@ -21,9 +21,9 @@ As the first step in your application (or just after log-setup), run the builder
 ```java
 
 ApplicationProperties.builderWithDefaults()               // 1.
-        .expectedProperties(                          // 2. 
+        .expectedProperties(                              // 2. 
                 MainProperties.class,                     // 3.
-                ServicesProperties.class)                 // 4.  
+                ServiceProperties.class)                  // 4.  
         .buildAndSetStaticSingleton();                    // 5.
 
 ```
@@ -64,6 +64,35 @@ Config.builder()
             MapConfigSource.builder().map(applicationProperties.map()))
     .build()
 ```
+
+## Unix Environment Varables
+
+Java and Unix/Posix has two different conventions to key's.
+Java: key.name=value
+Unix: KEY_NAME=value or key_name=value
+
+Java's approach is used in properties files. 
+Unix's is most often used in runtime environment. This is also default in Docker, Kubernetes and other cloud environments.
+
+Environment-variables as properties can be enabled through ApplicationProperties.Builder methods. If enabled without
+escaping, then environment-variable names are not treated as if they are escaped and will be used as-is as properties
+preserving everything including case. If enabled with escaping (default), then environment-variable names will be 
+treated as escaped according to the escaping rules.
+
+Escaping rules are applied in the following order:
+1. all letters become UPPERCASE
+1. `_` underscore becomes `_u_`
+1. `.` dot becomes `_`
+1. `-` dash becomes `_d_`
+
+Example 1: An application is has set the property `my.property=precious` in the `application.properties` file. At runtime
+the environment-variable `MY_PROPERTY=worthless` must be set in order to override the value of `my.property` within the
+application.
+
+Example 2: An application is has set the property `my-property=precious` in the `application.properties` file. At runtime
+the environment-variable `MY_d_PROPERTY=worthless` must be set in order to override the value of `my-property` within the
+application.
+
 
 
 

@@ -147,7 +147,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         private final String resourcePath;
         private final Map<String, String> propertyByName = new LinkedHashMap<>();
 
-        private Iterable<URL> getPropertyResources() {
+        private List<URL> getPropertyResources() {
             List<URL> resources = new ArrayList<>();
             Enumeration<URL> classPathResources;
             try {
@@ -166,8 +166,9 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
             this.resourcePath = resourcePath;
 
             // If classpath resource exists, read it
-            Iterable<URL> classPathResources = getPropertyResources();
-            classPathResources.forEach(classPathResource -> {
+            List<URL> classPathResources = getPropertyResources();
+            for (int i = classPathResources.size() - 1; i >= 0; i--) {
+                URL classPathResource = classPathResources.get(i);
                 Properties properties = new Properties();
                 try {
                     URLConnection urlConnection = classPathResource.openConnection();
@@ -180,7 +181,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
                 for (Map.Entry<Object, Object> e : properties.entrySet()) {
                     propertyByName.put((String) e.getKey(), (String) e.getValue());
                 }
-            });
+            }
         }
 
         public String get(String key) {
@@ -265,21 +266,45 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
     private static class EnvironmentStore extends AbstractStore {
         private final String prefix;
+        private final boolean useEscaping;
 
-        private EnvironmentStore(String prefix) {
+        private EnvironmentStore(String prefix, boolean useEscaping) {
             super(4);
             this.prefix = prefix;
+            this.useEscaping = useEscaping;
+        }
+
+        public String envVarToJavaProperty(String envVarKey) {
+            if (!useEscaping) {
+                return envVarKey;
+            }
+            return EnvironmentVariableEscaping.unescape(envVarKey);
+        }
+
+        public String javaPropertyToEnvVar(String propKey) {
+            if (!useEscaping) {
+                return propKey;
+            }
+            return EnvironmentVariableEscaping.escape(propKey);
         }
 
         public String get(String key) {
-            return System.getenv(prefix + key);
+            String envKey = prefix + javaPropertyToEnvVar(key);
+            return System.getenv(envKey);
         }
 
         @Override
         public void putAllToMap(Map<String, String> map) {
             for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
                 if (entry.getKey().startsWith(prefix)) {
-                    map.put(entry.getKey().substring(prefix.length()), entry.getValue());
+                    String strippedEnvVarKey = entry.getKey().substring(prefix.length());
+                    if (useEscaping) {
+                        if (map.containsKey(strippedEnvVarKey)) {
+                            log.warn("Environment-variable '{}' will NOT override property with same name. To override this property, use environment-variable '{}'", strippedEnvVarKey, EnvironmentVariableEscaping.escape(strippedEnvVarKey));
+                        }
+                    }
+                    String propKey = envVarToJavaProperty(strippedEnvVarKey);
+                    map.put(propKey, entry.getValue());
                 }
             }
         }
@@ -304,18 +329,26 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
     }
 
     private static class SystemPropertiesStore extends AbstractStore {
-        private SystemPropertiesStore() {
+        private final String prefix;
+
+        private SystemPropertiesStore(String prefix) {
             super(4);
+            this.prefix = prefix;
         }
 
         public String get(String key) {
-            return System.getProperty(key);
+            return System.getProperty(prefix + key);
         }
 
         @Override
         public void putAllToMap(Map<String, String> map) {
             for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
-                map.put((String) entry.getKey(), (String) entry.getValue());
+                if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
+                    if (((String) entry.getKey()).startsWith(prefix)) {
+                        String strippedKey = ((String) entry.getKey()).substring(prefix.length());
+                        map.put(strippedKey, (String) entry.getValue());
+                    }
+                }
             }
         }
 
@@ -459,14 +492,32 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         }
 
         @Override
+        public ApplicationProperties.Builder enableEnvironmentVariables() {
+            storeList.addFirst(new EnvironmentStore("", true));
+            return this;
+        }
+
+        @Override
         public ApplicationProperties.Builder enableEnvironmentVariables(String prefix) {
-            storeList.addFirst(new EnvironmentStore(prefix));
+            storeList.addFirst(new EnvironmentStore(prefix, true));
+            return this;
+        }
+
+        @Override
+        public ApplicationProperties.Builder enableEnvironmentVariablesWithoutEscaping() {
+            storeList.addFirst(new EnvironmentStore("", false));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableSystemProperties() {
-            storeList.addFirst(new SystemPropertiesStore());
+            storeList.addFirst(new SystemPropertiesStore(""));
+            return this;
+        }
+
+        @Override
+        public ApplicationProperties.Builder enableSystemProperties(String prefix) {
+            storeList.addFirst(new SystemPropertiesStore(prefix));
             return this;
         }
 
