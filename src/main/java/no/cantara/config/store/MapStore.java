@@ -8,7 +8,7 @@ class MapStore extends AbstractStore {
     final Map<String, String> valueByKey = new LinkedHashMap<>();
 
     MapStore(Map<String, String> map, int i) {
-        super(4 + i);
+        super(3 + i);
         valueByKey.putAll(map);
     }
 

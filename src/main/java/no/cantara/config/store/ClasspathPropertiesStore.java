@@ -34,7 +34,7 @@ class ClasspathPropertiesStore extends AbstractStore {
     }
 
     ClasspathPropertiesStore(String resourcePath) {
-        super(4);
+        super(3);
         this.resourcePath = resourcePath;
 
         // If classpath resource exists, read it

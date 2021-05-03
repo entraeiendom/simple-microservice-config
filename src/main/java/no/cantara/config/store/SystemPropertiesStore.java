@@ -6,7 +6,7 @@ class SystemPropertiesStore extends AbstractStore {
     private final String prefix;
 
     SystemPropertiesStore(String prefix) {
-        super(4);
+        super(3);
         this.prefix = prefix;
     }
 

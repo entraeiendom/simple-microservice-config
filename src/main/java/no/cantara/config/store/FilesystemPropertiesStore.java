@@ -19,7 +19,7 @@ class FilesystemPropertiesStore extends AbstractStore {
     private final Map<String, String> propertyByName = new LinkedHashMap<>();
 
     FilesystemPropertiesStore(String resourcePath) {
-        super(4);
+        super(3);
         this.resourcePath = resourcePath;
 
         // If file exists, override configuration

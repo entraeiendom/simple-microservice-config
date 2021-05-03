@@ -20,7 +20,7 @@ class EnvironmentStore extends AbstractStore {
     private final boolean useEscaping;
 
     EnvironmentStore(String prefix, boolean useEscaping, Set<String> casingSet) {
-        super(4);
+        super(3);
         this.prefix = prefix;
         this.useEscaping = useEscaping;
         this.casingSet = casingSet;

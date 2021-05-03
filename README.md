@@ -1,8 +1,31 @@
 # property-config
-Read configuration from builder-specified sources or use one of the default templates to get sources as defined by 
-some conventions.
 
-Future support is planned as AWS for secret-distribution
+An easy-to-use, fast and flexible standalone application configuration library with zero dependencies. Configuration 
+values are configured as properties, either through property-files, system-properties or environment-variables.
+
+The library aims to make it easy to standardize the use of certain files and/or properties across many code-bases 
+without having to learn a new approach to configuration for every application you have. The library does indeed come
+with default conventions about which configuration sources are loaded in which order, so there is no need to specify
+any configuration sources if you want to follow the convention.
+
+By default convention the library first loads `application.properties` from the classpath, then
+`local_override.properties` from the current-working-directory, then system-properties, then environment-variables.
+However, this is very easy to change, all you need to do is set up configuration sources using the builder without
+default conventions set up.
+
+Properties from all configured sources are merged together into one immutable map upon building the 
+`ApplicationProperties` instance. The sources configured will have their properties put into the map in the order they 
+are configured, hence sources configured after will overwrite properties from sources that have been configured before.
+
+Get as Maven dependency
+```xml
+<dependency>
+    <groupId>no.cantara.config</groupId>
+    <artifactId>property-config</artifactId>
+    <version>0.5.0</version>
+</dependency>
+```
+
 
 ## Property-files
 
@@ -130,7 +153,13 @@ This will cause the environment-variable `SERVERPORT=9034` to be interpreted as 
 was set.
 
 
+##### Debugging configuration
 
+A full dump of all properties, and the sources they come from, and optionally which other sources was overridden can be
+dumped to stdout using the following statement:
+```java
+System.out.println(ApplicationProperties.getInstance().debugAll(true));
+```
 
 ## Testing 
 
