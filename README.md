@@ -202,13 +202,6 @@ The default template loads configuration from the following sources and in the f
 1. The file `local_override.properties` in the current-working-directory.
 1. System properties as set on the command line. e.g. `mvn clean install -Dserver.port=30123`
 
-The builder defines a `property(String key, String value)` that can be used when overriding the exisiting properties 
-or setting a spesific property for a test. You can also skip the `withExpectedProperties`. When this is skipped the 
-`build()` call does not validate the set of existing properties, which can be handy for a partial test.  
-
-If you use the `buildAndSetStaticSingleton()` method, this may affect test needing different properties on startup. 
-To help, the `testsupport` package is packed in main and contains a 
-`ApplicationPropertiesTestHelper.resetApplicationProperties()` that voids the singleton allowing the builder to be 
-initialized again. To help future developers, run this in teardown of tests whenever you initialize the 
-`ApplicationProperties`. 
-
+The builder defines a `property(String key, String value)` that can be used when overriding the existing properties 
+or setting a specific property for a test. You can also skip the `expectedProperties`. When this is skipped the 
+`build()` call does not validate the set of existing properties, which can be handy for a partial test.
