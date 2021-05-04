@@ -1,9 +1,9 @@
 # property-config
 
-Fast and opinionated configuration library with zero dependencies. Configuration values are configured as properties, 
-either through property-files, system-properties or environment-variables. The library has default conventions on how to
-load configuration, which makes it very easy to use. Once built, internal state never changes,
-which allows the library to pre-process all properties into one immutable and fast map. There is no need for 
+Fast and opinionated configuration library with zero dependencies. Configuration values are configured as properties 
+through property-files and may be overridden through system-properties or environment-variables. The library has 
+default conventions on how to load configuration, which makes it very easy to use. Once built, internal state never 
+changes, which allows the library to pre-process all properties into one immutable and fast map. There is no need for 
 synchronization which makes the `ApplicationProperties` instance safe to share among threads.
 
 The library standardizes on the use of certain files and/or properties helping the developers and operations to 
@@ -63,8 +63,10 @@ override earlier ones:
 1. The first `application.properties` resource found on the classpath. If there are multiple such resources on the 
    classpath, only the first one found is loaded.
 1. The file `local_override.properties` in the current-working-directory.
-1. System properties as set on the command line. e.g. `java "-Dservice.prop=prod" -jar app.jar`
-1. Environment variables using the escaping rules as documented in this readme. e.g. `SERVICE_PROP=prod`
+1. System properties as set on the command line. e.g. `java "-Dservice.prop=prod" -jar app.jar`. (*)
+1. Environment variables using the escaping rules as documented in this readme. e.g. `SERVICE_PROP=prod`. (*)
+
+(*) Note that environment properties may only override existing properties, new properties are eliminated.
 
 #### A more advanced example with expected properties set:
 
