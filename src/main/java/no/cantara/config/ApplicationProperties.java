@@ -206,17 +206,7 @@ public interface ApplicationProperties {
         return builder()
                 .classpathPropertiesFile("application.properties")
                 .classpathPropertiesFile("test_override.properties")
-                .enableSystemProperties();
-    }
-
-    /**
-     * The default opinionated builder ready for unit-testing where configuration is allowed to change at any time,
-     * though typically done between test. This builder also has environment-variables enabled.
-     *
-     * @return
-     */
-    static Builder builderWithTestDefaultsAndEnvironmentVariables() {
-        return builderWithTestDefaults()
+                .enableSystemProperties()
                 .enableEnvironmentVariables();
     }
 
