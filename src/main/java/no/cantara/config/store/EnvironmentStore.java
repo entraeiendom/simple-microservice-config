@@ -50,7 +50,7 @@ class EnvironmentStore extends AbstractStore {
                 return null;
             }
         }
-        String envKey = javaPropertyToEnvVar(key);
+        String envKey = prefix + javaPropertyToEnvVar(key);
         String value = System.getenv(envKey);
         return value;
     }
