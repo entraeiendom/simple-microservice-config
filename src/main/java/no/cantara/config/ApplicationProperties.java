@@ -52,10 +52,22 @@ public interface ApplicationProperties {
     /**
      * Get a map of properties that starts with the given prefix, but has that prefix removed in the resulting map.
      *
-     * @param prefix a prefix to
+     * @param prefix a prefix to match all properties against
      * @return the sub-map
      */
     Map<String, String> subMap(String prefix);
+
+    /**
+     * Get an instance based on a sub-map of this instance. The prefix is passed to {@link #subMap} to extract the
+     * matching sub-tree of properties. The resulting properties will not contain the prefix itself, it will be stripped
+     * from the beginning of the property names.
+     *
+     * @param prefix a prefix to match all properties against
+     * @return a new instance of this class based on the sub-map
+     */
+    default ApplicationProperties subTree(String prefix) {
+        return ApplicationProperties.builder().map(subMap(prefix)).build();
+    }
 
     interface Source {
         String propertyName();
