@@ -1,54 +1,70 @@
 # property-config
 
-An easy-to-use, fast and flexible standalone application configuration library with zero dependencies. Configuration 
-values are configured as properties, either through property-files, system-properties or environment-variables.
+Fast and opinionated configuration library with zero dependencies. Configuration values are configured as properties, 
+either through property-files, system-properties or environment-variables. The library has default conventions on how to
+load configuration, which makes it very easy to use. Once built, internal state never changes,
+which allows the library to pre-process all properties into one immutable and fast map. There is no need for 
+synchronization which makes the `ApplicationProperties` instance safe to share among threads.
 
-The library aims to make it easy to standardize the use of certain files and/or properties across many code-bases 
-without having to learn a new approach to configuration for every application you have. The library does indeed come
-with default conventions about which configuration sources are loaded in which order, so there is no need to specify
-any configuration sources if you want to follow the convention.
+The library standardizes on the use of certain files and/or properties helping the developers and operations to 
+recognize how an application is configured. This is particularly useful in a microservice architecture where there are 
+many services and applications.
 
-By default convention the library first loads `application.properties` from the classpath, then
-`local_override.properties` from the current-working-directory, then system-properties, then environment-variables.
-However, this is very easy to change, all you need to do is set up configuration sources using the builder without
-default conventions set up.
+The library first loads `application.properties` from the classpath, then `local_override.properties` from the 
+current-working-directory, then system-properties, then environment-variables. Should you want to use the library with
+different sources, then you can build your instance using the plain builder which requires you to specify all your 
+configuration sources.
 
 Properties from all configured sources are merged together into one immutable map upon building the 
 `ApplicationProperties` instance. The sources configured will have their properties put into the map in the order they 
 are configured, hence sources configured after will overwrite properties from sources that have been configured before.
 
-Get as Maven dependency
+### Maven
+
+#### Configure the Cantara repository
+```xml
+<repository>
+    <id>cantara-releases</id>
+    <name>Cantara Release Repository</name>
+    <url>http://mvnrepo.cantara.no/content/repositories/releases/</url>
+</repository>
+```
+#### Include the dependency
 ```xml
 <dependency>
     <groupId>no.cantara.config</groupId>
     <artifactId>property-config</artifactId>
-    <version>0.5.0</version>
+    <version>0.5.1</version>
 </dependency>
 ```
 
 
-## Property-files
+### Configuring applications
 
-1. Create `application.properties` in your `src/main/resources` folder.
-1. Create `local_override.properties` file on service root (or where you have your current-working-directory when running service)
+1. Create `application.properties` in your `src/main/resources` folder and put your basic configuration here.
+1. Create `local_override.properties` file on service root (or where you have your current-working-directory 
+   when running service). Here you will put all your properties that are specific to the environment of the application
+   running where the file is located.
 
-If you are moving from `local_config.properties` consider making an alias to support rollback `ln -s local_override.properties local_config.properties`
+If you are moving from `local_config.properties` (legacy from earlier conventions) consider making an alias to support 
+rollback `ln -s local_override.properties local_config.properties`
 
 ### Service initialization (main)
 
-#### As the first step in your application (or just after log-setup), run the builder as following to initialize with defaults
+#### As the first step in your application (or just after log-setup), initialize the static singleton.
 
 ```java
 ApplicationProperties.builderWithDefaults()
     .buildAndSetStaticSingleton();
 ```
 
-The default template loads configuration from the following sources and in the following order where latter sources override earlier ones:
-1. The first `application.properties` resource found on the classpath. If the are multiple such resources on the 
+The default template loads configuration from the following sources and in the following order where latter sources 
+override earlier ones:
+1. The first `application.properties` resource found on the classpath. If there are multiple such resources on the 
    classpath, only the first one found is loaded.
 1. The file `local_override.properties` in the current-working-directory.
 1. System properties as set on the command line. e.g. `java "-Dservice.prop=prod" -jar app.jar`
-1. Environment variables using the escaping rules as documented in this readme.
+1. Environment variables using the escaping rules as documented in this readme. e.g. `SERVICE_PROP=prod`
 
 #### A more advanced example with expected properties set:
 
@@ -80,13 +96,13 @@ class MainProperties {
 
 This allows us to use 
 ```java
-String serverHost = ApplicationProperties.getInstance().get(MainProperties.SERVER_HOST)
-int serverPort = ApplicationProperties.getInstance().asInt(MainProperties.SERVER_PORT)
+String serverHost = ApplicationProperties.getInstance().get("server.host")
+int serverPort = ApplicationProperties.getInstance().asInt("server.port")
 ```
 or with default port of 8080 if not defined in ApplicationProperties instance
 ```java
-String serverHost = ApplicationProperties.getInstance().get(MainProperties.SERVER_HOST, "localhost")
-int serverPort = ApplicationProperties.getInstance().asInt(MainProperties.SERVER_PORT, 8080)
+String serverHost = ApplicationProperties.getInstance().get("server.host", "localhost")
+int serverPort = ApplicationProperties.getInstance().asInt("server.port", 8080)
 ```
 
 If the application server uses property-injection and expects a certain set of properties, the properties can be exported and forwarded 
@@ -163,7 +179,17 @@ System.out.println(ApplicationProperties.getInstance().debugAll(true));
 
 ## Testing 
 
-If you are creating configuration to be used for unit-testing you should use the following initialization
+To allow changing configuration between tests, the library provides a mutable (but slower) ApplicationProperties
+implementation. Enable the mutable static singleton before any other initialization.
+
+```java
+    @BeforeClass
+    public static void enableMutableSingleton() {
+        ApplicationPropertiesTestHelper.enableMutableSingleton();
+    }
+```
+
+To initialize the static singleton with test-defaults, use one of the builderWithTestDefaults initialization methods.
 
 ```java
 ApplicationProperties.builderWithTestDefaults()
