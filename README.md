@@ -34,7 +34,7 @@ are configured, hence sources configured after will overwrite properties from so
 <dependency>
     <groupId>no.cantara.config</groupId>
     <artifactId>property-config</artifactId>
-    <version>0.5.1</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
