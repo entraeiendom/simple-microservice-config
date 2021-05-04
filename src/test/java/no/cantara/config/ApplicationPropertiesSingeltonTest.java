@@ -1,7 +1,7 @@
 package no.cantara.config;
 
 import no.cantara.config.testsupport.ApplicationPropertiesTestHelper;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,15 +9,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ApplicationPropertiesSingeltonTest {
 
 
-    @Before
-    public void resetSingleton() {
-        ApplicationPropertiesTestHelper.resetApplicationProperties();
+    @BeforeClass
+    public static void enableMutableSingleton() {
+        ApplicationPropertiesTestHelper.enableMutableSingleton();
     }
 
-
-
-    @Test(expected = RuntimeException.class)
-    public void shouldGetPropertiesWithSingleProperty() {
+    @Test(expected = IllegalStateException.class)
+    public void thatNullInstanceWillThrowFailFastExceptionWhenAccessed() {
+        ApplicationPropertiesTestHelper.clearSingleton();
         ApplicationProperties.getInstance();
     }
 

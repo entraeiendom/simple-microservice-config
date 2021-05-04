@@ -1,6 +1,7 @@
 package no.cantara.config;
 
 import no.cantara.config.store.StoreBasedApplicationProperties;
+import no.cantara.config.testsupport.MutableDelegatingApplicationProperties;
 
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -47,6 +48,14 @@ public interface ApplicationProperties {
      * @return a list (possibly empty) of all the sources that provide values for the property with the given name.
      */
     List<Source> sourcesOf(String name);
+
+    /**
+     * Get a map of properties that starts with the given prefix, but has that prefix removed in the resulting map.
+     *
+     * @param prefix a prefix to
+     * @return the sub-map
+     */
+    Map<String, String> subMap(String prefix);
 
     interface Source {
         String propertyName();
@@ -139,16 +148,34 @@ public interface ApplicationProperties {
     }
 
     static ApplicationProperties getInstance() {
-        if (ApplicationPropertiesRepo.theInstance() == null) {
-            throw new IllegalStateException("Cannot get ApplicationProperties-instance prior to Builder.init()");
+        ApplicationProperties instance = ApplicationPropertiesRepo.theInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Cannot get ApplicationProperties-instance prior to calling Builder.buildAndSetStaticSingleton()");
         }
-        return ApplicationPropertiesRepo.theInstance();
+        if (instance instanceof MutableDelegatingApplicationProperties) {
+            ApplicationProperties delegate = ((MutableDelegatingApplicationProperties) instance).getDelegate();
+            if (delegate == null) {
+                throw new IllegalStateException("Test-mode with mutable static singleton enabled. Cannot get ApplicationProperties-instance prior to calling Builder.buildAndSetStaticSingleton().");
+            }
+            return delegate;
+        }
+        return instance;
     }
 
+    /**
+     * A builder for creating a very fast and immutable ApplicationProperties instance suited for production use.
+     *
+     * @return a builder suited to create ApplicationProperties for production use.
+     */
     static Builder builder() {
         return new StoreBasedApplicationProperties.Builder();
     }
 
+    /**
+     * The default opinionated builder ready for production use.
+     *
+     * @return
+     */
     static Builder builderWithDefaults() {
         return builder()
                 .classpathPropertiesFile("application.properties")
@@ -157,6 +184,12 @@ public interface ApplicationProperties {
                 .enableEnvironmentVariables();
     }
 
+    /**
+     * The default opinionated builder ready for unit-testing where configuration is allowed to change at any time,
+     * though typically done between test.
+     *
+     * @return
+     */
     static Builder builderWithTestDefaults() {
         return builder()
                 .classpathPropertiesFile("application.properties")
@@ -164,6 +197,12 @@ public interface ApplicationProperties {
                 .enableSystemProperties();
     }
 
+    /**
+     * The default opinionated builder ready for unit-testing where configuration is allowed to change at any time,
+     * though typically done between test. This builder also has environment-variables enabled.
+     *
+     * @return
+     */
     static Builder builderWithTestDefaultsAndEnvironmentVariables() {
         return builderWithTestDefaults()
                 .enableEnvironmentVariables();
@@ -243,9 +282,6 @@ public interface ApplicationProperties {
          *                                                    was called.
          */
         default ApplicationProperties buildAndSetStaticSingleton() throws StaticSingletonAlreadyInitializedException {
-            if (ApplicationPropertiesRepo.theInstance() != null) {
-                throw new StaticSingletonAlreadyInitializedException();
-            }
             ApplicationProperties instance = build();
             ApplicationPropertiesRepo.initInstance(instance);
             return instance;

@@ -1,7 +1,7 @@
 package no.cantara.config;
 
 import no.cantara.config.testsupport.ApplicationPropertiesTestHelper;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.LinkedHashMap;
@@ -11,9 +11,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ApplicationPropertiesTest {
 
-    @Before
-    public void resetSingleton() {
-        ApplicationPropertiesTestHelper.resetApplicationProperties();
+    @BeforeClass
+    public static void enableMutableSingleton() {
+        ApplicationPropertiesTestHelper.enableMutableSingleton();
     }
 
 

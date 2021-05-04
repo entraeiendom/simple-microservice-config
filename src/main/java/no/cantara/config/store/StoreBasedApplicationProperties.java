@@ -15,8 +15,10 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -32,13 +34,16 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
     private final Deque<Store> storeList;
 
     /*
-     * A very efficient immutable map with pre-resolved entries.
+     * A very performant immutable map with pre-resolved entries.
      */
     private final Map<String, String> effectiveProperties;
+
+    private final NavigableMap navigableMap;
 
     private StoreBasedApplicationProperties(Deque<Store> storeList) {
         this.storeList = storeList;
         this.effectiveProperties = Collections.unmodifiableMap(buildMapFromStore());
+        navigableMap = Collections.unmodifiableNavigableMap(new TreeMap<>(effectiveProperties));
     }
 
     @Override
@@ -60,6 +65,16 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
             }
         }
         return result;
+    }
+
+    @Override
+    public Map<String, String> subMap(String prefix) {
+        Map<String, String> subMap = new LinkedHashMap<>();
+        NavigableMap<String, String> subMapWithPrefix = this.navigableMap.subMap(prefix, true, prefix + Character.MAX_VALUE, true);
+        for (Map.Entry<String, String> entry : subMapWithPrefix.entrySet()) {
+            subMap.put(entry.getKey().substring(prefix.length()), entry.getValue());
+        }
+        return subMap;
     }
 
     Map<String, String> buildMapFromStore() {
