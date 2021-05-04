@@ -170,31 +170,36 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariables() {
-            storeList.addFirst(new EnvironmentStore(new SourceConfigurationLocationException(1), "", true, envVarCasingSet));
+            Set<String> basePropertyKeys = new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet();
+            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), "", true, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariables(String prefix) {
-            storeList.addFirst(new EnvironmentStore(new SourceConfigurationLocationException(1), prefix, true, envVarCasingSet));
+            Set<String> basePropertyKeys = new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet();
+            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), prefix, true, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableEnvironmentVariablesWithoutEscaping() {
-            storeList.addFirst(new EnvironmentStore(new SourceConfigurationLocationException(1), "", false, envVarCasingSet));
+            Set<String> basePropertyKeys = new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet();
+            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), "", false, envVarCasingSet));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableSystemProperties() {
-            storeList.addFirst(new SystemPropertiesStore(new SourceConfigurationLocationException(1), ""));
+            Set<String> basePropertyKeys = new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet();
+            storeList.addFirst(new SystemPropertiesStore(basePropertyKeys, new SourceConfigurationLocationException(1), ""));
             return this;
         }
 
         @Override
         public ApplicationProperties.Builder enableSystemProperties(String prefix) {
-            storeList.addFirst(new SystemPropertiesStore(new SourceConfigurationLocationException(1), prefix));
+            Set<String> basePropertyKeys = new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet();
+            storeList.addFirst(new SystemPropertiesStore(basePropertyKeys, new SourceConfigurationLocationException(1), prefix));
             return this;
         }
 

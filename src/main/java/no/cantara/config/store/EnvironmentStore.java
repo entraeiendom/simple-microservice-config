@@ -17,11 +17,13 @@ class EnvironmentStore extends AbstractStore {
 
     private final Set<String> casingSet;
 
+    private final Set<String> basePropertyKeys;
     private final String prefix;
     private final boolean useEscaping;
 
-    EnvironmentStore(SourceConfigurationLocationException location, String prefix, boolean useEscaping, Set<String> casingSet) {
+    EnvironmentStore(Set<String> basePropertyKeys, SourceConfigurationLocationException location, String prefix, boolean useEscaping, Set<String> casingSet) {
         super(location);
+        this.basePropertyKeys = basePropertyKeys;
         this.prefix = prefix;
         this.useEscaping = useEscaping;
         this.casingSet = casingSet;
@@ -43,6 +45,9 @@ class EnvironmentStore extends AbstractStore {
 
     @Override
     public String get(String key) {
+        if (!basePropertyKeys.contains(key)) {
+            return null; // key does not override an existing property from a base store
+        }
         if (!key.toLowerCase().equals(key)) {
             // key has at least one uppercase letter
             if (!casingSet.contains(key)) {
@@ -68,7 +73,11 @@ class EnvironmentStore extends AbstractStore {
                 }
                 String propKey = envVarToJavaProperty(strippedEnvVarKey);
                 String possiblyAliasedPropKey = casingByLowercase.getOrDefault(propKey, propKey);
-                map.put(possiblyAliasedPropKey, entry.getValue());
+                if (basePropertyKeys.contains(possiblyAliasedPropKey)) {
+                    map.put(possiblyAliasedPropKey, entry.getValue());
+                } else {
+                    // not an override, filter out
+                }
             }
         }
     }

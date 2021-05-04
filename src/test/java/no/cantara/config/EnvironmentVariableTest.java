@@ -55,7 +55,7 @@ public class EnvironmentVariableTest {
                     .build();
 
             assertEquals(null, instance.get("IAMCAMELCASED"));
-            assertEquals("Set in env", instance.get("iamcamelcased"));
+            assertEquals(null, instance.get("iamcamelcased")); // not an override (due to case mismatch)
             assertEquals("from application properties", instance.get("iAmCamelCased"));
             System.out.printf("%s%n", instance.sourcesOf("iAmCamelCased"));
         }
