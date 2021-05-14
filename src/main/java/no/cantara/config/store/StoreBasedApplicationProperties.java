@@ -70,9 +70,10 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
     @Override
     public Map<String, String> subMap(String prefix) {
         Map<String, String> subMap = new LinkedHashMap<>();
-        NavigableMap<String, String> subMapWithPrefix = this.navigableMap.subMap(prefix, true, prefix + Character.MAX_VALUE, true);
+        String effectivePrefix = prefix.endsWith(".") ? prefix : prefix + ".";
+        NavigableMap<String, String> subMapWithPrefix = this.navigableMap.subMap(effectivePrefix, true, effectivePrefix + Character.MAX_VALUE, true);
         for (Map.Entry<String, String> entry : subMapWithPrefix.entrySet()) {
-            subMap.put(entry.getKey().substring(prefix.length()), entry.getValue());
+            subMap.put(entry.getKey().substring(effectivePrefix.length()), entry.getValue());
         }
         return subMap;
     }

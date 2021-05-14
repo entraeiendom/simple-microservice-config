@@ -18,11 +18,20 @@ public class SubMapTest {
                 .end()
                 .build();
 
-        Map<String, String> l2 = instance.subMap("level1.l2.");
-        assertEquals(3, l2.size());
-        assertEquals("A", l2.get("a"));
-        assertEquals("123", l2.get("l3.b"));
-        assertEquals("C", l2.get("c"));
+        {
+            Map<String, String> l2 = instance.subMap("level1.l2."); // with dot at end
+            assertEquals(3, l2.size());
+            assertEquals("A", l2.get("a"));
+            assertEquals("123", l2.get("l3.b"));
+            assertEquals("C", l2.get("c"));
+        }
+        {
+            Map<String, String> l2 = instance.subMap("level1.l2"); // without dot at end
+            assertEquals(3, l2.size());
+            assertEquals("A", l2.get("a"));
+            assertEquals("123", l2.get("l3.b"));
+            assertEquals("C", l2.get("c"));
+        }
     }
 
     @Test
