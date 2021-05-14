@@ -34,13 +34,18 @@ public class SubMapTest {
                 .put("level1.l2.l3.b", "123")
                 .put("level1.l2.c", "C")
                 .put("level1.l2a.x", "end")
+                .put("levelX.l1.34", "begin")
+                .put("levelX.l2.a", "A")
+                .put("levelX.l2.l3.b", "123")
+                .put("levelX.l2.c", "C")
+                .put("levelX.l2a.x", "end")
                 .end()
                 .build();
 
         ApplicationProperties l2 = instance.subTree("level1.l2.");
         assertEquals(3, l2.map().size());
         assertEquals("A", l2.get("a"));
-        assertEquals(123, l2.asInt("l3.b"));
+        assertEquals(123, l2.asInt("l3.b", 1234));
         assertEquals("C", l2.get("c"));
     }
 }
