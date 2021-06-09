@@ -184,38 +184,55 @@ public interface ApplicationProperties {
     }
 
     /**
-     * The default opinionated builder ready for production use.
-     *
-     * @return
-     */
-    static Builder builderWithDefaults() {
-        return builder()
-                .classpathPropertiesFile("application.properties")
-                .filesystemPropertiesFile("local_override.properties")
-                .enableSystemProperties()
-                .enableEnvironmentVariables();
-    }
-
-    /**
-     * The default opinionated builder ready for unit-testing where configuration is allowed to change at any time,
-     * though typically done between test.
-     *
-     * @return
-     */
-    static Builder builderWithTestDefaults() {
-        return builder()
-                .classpathPropertiesFile("application.properties")
-                .classpathPropertiesFile("test_override.properties")
-                .enableSystemProperties()
-                .enableEnvironmentVariables();
-    }
-
-    /**
      * The order of property sources specified when using methods in this builder is significant for resolving effective
      * values of properties from the {@link ApplicationProperties} instance that is built. Sources configured later are
      * always used before an earlier configured source when resolving property values.
      */
     interface Builder {
+
+        /**
+         * Add default opinionated configuration-sources to this builder.
+         *
+         * @return
+         */
+        default Builder defaults() {
+            return classpathPropertiesFile("application.properties")
+                    .filesystemPropertiesFile("local_override.properties")
+                    .enableSystemProperties()
+                    .enableEnvironmentVariables();
+        }
+
+        /**
+         * Add default opinionated configuration-sources (without environment-variables and system-properties) to this builder.
+         *
+         * @return
+         */
+        default Builder defaultsWithoutEnvironment() {
+            return classpathPropertiesFile("application.properties")
+                    .filesystemPropertiesFile("local_override.properties");
+        }
+
+        /**
+         * Add opinionated test configuration-sources to this builder.
+         *
+         * @return
+         */
+        default Builder testDefaults() {
+            return classpathPropertiesFile("application.properties")
+                    .classpathPropertiesFile("test_override.properties")
+                    .enableSystemProperties()
+                    .enableEnvironmentVariables();
+        }
+
+        /**
+         * Add opinionated test configuration-sources (without environment-variables and system-properties) to this builder.
+         *
+         * @return
+         */
+        default Builder testDefaultsWithoutEnvironment() {
+            return classpathPropertiesFile("application.properties")
+                    .classpathPropertiesFile("test_override.properties");
+        }
 
         Builder expectedProperties(Class... expectedApplicationProperties);
 

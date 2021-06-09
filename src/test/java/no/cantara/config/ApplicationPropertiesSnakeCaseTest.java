@@ -13,7 +13,8 @@ public class ApplicationPropertiesSnakeCaseTest {
          * by inserting the environment variable 'base_url' with a value of 'overload' (anything except 'underscore'
          * will work) then observe that the test fails which confirms that environment variable overrides are working.
          */
-        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties applicationProperties = ApplicationProperties.builder()
+                .defaults()
                 .property("base_url", "underscore")
                 .enableEnvironmentVariablesWithoutEscaping()
                 .build();
@@ -29,7 +30,8 @@ public class ApplicationPropertiesSnakeCaseTest {
          * 'underscore' will work) then observe that the test passes, but with a WARN logged from
          * StoreBasedApplicationProperties with a message that you should use 'BASE_u_URL' to override the property.
          */
-        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties applicationProperties = ApplicationProperties.builder()
+                .defaults()
                 .property("base_url", "underscore")
                 .enableEnvironmentVariables()
                 .build();
@@ -44,7 +46,8 @@ public class ApplicationPropertiesSnakeCaseTest {
          * by inserting the environment variable 'BASE_u_URL' with a value of 'overload' (anything except 'underscore'
          * will work) then observe that the test fails which confirms that environment variable overrides are working.
          */
-        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties applicationProperties = ApplicationProperties.builder()
+                .defaults()
                 .property("base_url", "underscore")
                 .enableEnvironmentVariables()
                 .build();
@@ -59,7 +62,8 @@ public class ApplicationPropertiesSnakeCaseTest {
          * by inserting the environment variable 'BASE_URL' with a value of 'overload' (anything except 'dot'
          * will work) then observe that the test fails which confirms that environment variable overrides are working.
          */
-        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties applicationProperties = ApplicationProperties.builder()
+                .defaults()
                 .property("base.url", "dot")
                 .enableEnvironmentVariables()
                 .build();
@@ -74,7 +78,8 @@ public class ApplicationPropertiesSnakeCaseTest {
          * by inserting the environment variable 'BASE_d_URL' with a value of 'overload' (anything except 'dash'
          * will work) then observe that the test fails which confirms that environment variable overrides are working.
          */
-        ApplicationProperties applicationProperties = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties applicationProperties = ApplicationProperties.builder()
+                .defaults()
                 .property("base-url", "dash")
                 .enableEnvironmentVariables()
                 .build();

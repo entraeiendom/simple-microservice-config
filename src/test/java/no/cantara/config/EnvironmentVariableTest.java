@@ -17,7 +17,8 @@ public class EnvironmentVariableTest {
         Map<String, String> envs = new HashMap<>();
         envs.put("SNAKE_CASE_TEST", "Set in env");
         setEnv(envs);
-        ApplicationProperties instance = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties instance = ApplicationProperties.builder()
+                .defaults()
                 .build();
 
         assertEquals("Set in env", System.getenv("SNAKE_CASE_TEST"));
@@ -27,19 +28,30 @@ public class EnvironmentVariableTest {
         System.out.printf("%s%n", instance.sourcesOf("snake.case.test"));
     }
 
+    public static class ExpectedEnvVars {
+        public static final String VAR1 = "expected.only";
+    }
+
     @Test
     public void environmentTest() throws Exception {
         Map<String, String> envs = new LinkedHashMap<>();
         envs.put("ENVIRONMENT_VARIABLE", "Set in env");
+        envs.put("EXPECTED_ONLY", "Set in env");
         setEnv(envs);
-        ApplicationProperties instance = ApplicationProperties.builderWithDefaults()
+        ApplicationProperties instance = ApplicationProperties.builder()
+                .expectedProperties(ExpectedEnvVars.class)
+                .defaults()
                 .build();
 
         assertEquals("Set in env", System.getenv("ENVIRONMENT_VARIABLE"));
+        assertEquals("Set in env", System.getenv("EXPECTED_ONLY"));
         assertEquals("Set in env", instance.get("environment.variable"));
+        assertEquals("Set in env", instance.get("expected.only"));
         assertEquals(null, instance.get("ENVIRONMENT.VARIABLE"));
         assertEquals(null, instance.get("ENVIRONMENT_VARIABLE"));
         System.out.printf("%s%n", instance.sourcesOf("environment.variable"));
+
+        System.out.printf("%s%n", instance.debugAll(true));
     }
 
     @Test
@@ -51,7 +63,8 @@ public class EnvironmentVariableTest {
 
         {
             // env-var is always translated to property with lowercase key unless directed otherwise
-            ApplicationProperties instance = ApplicationProperties.builderWithDefaults()
+            ApplicationProperties instance = ApplicationProperties.builder()
+                    .defaults()
                     .build();
 
             assertEquals(null, instance.get("IAMCAMELCASED"));
@@ -62,7 +75,8 @@ public class EnvironmentVariableTest {
 
         {
             // With casing specified - env-var is translated only to the casing as specified
-            ApplicationProperties instance = ApplicationProperties.builderWithDefaults()
+            ApplicationProperties instance = ApplicationProperties.builder()
+                    .defaults()
                     .envVarCasing("iAmCamelCased")
                     .build();
 
