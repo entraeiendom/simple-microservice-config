@@ -4,10 +4,13 @@ import no.cantara.config.EnvironmentVariableEscaping;
 import no.cantara.config.SourceConfigurationLocationException;
 import org.slf4j.Logger;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -15,18 +18,15 @@ class EnvironmentStore extends AbstractStore {
 
     private static final Logger log = getLogger(EnvironmentStore.class);
 
-    private final Set<String> casingSet;
-
     private final Set<String> basePropertyKeys;
     private final String prefix;
     private final boolean useEscaping;
 
-    EnvironmentStore(Set<String> basePropertyKeys, SourceConfigurationLocationException location, String prefix, boolean useEscaping, Set<String> casingSet) {
+    EnvironmentStore(Set<String> basePropertyKeys, SourceConfigurationLocationException location, String prefix, boolean useEscaping) {
         super(location);
         this.basePropertyKeys = basePropertyKeys;
         this.prefix = prefix;
         this.useEscaping = useEscaping;
-        this.casingSet = casingSet;
     }
 
     public String envVarToJavaProperty(String envVarKey) {
@@ -48,13 +48,6 @@ class EnvironmentStore extends AbstractStore {
         if (!basePropertyKeys.contains(key)) {
             return null; // key does not override an existing property from a base store
         }
-        if (!key.toLowerCase().equals(key)) {
-            // key has at least one uppercase letter
-            if (!casingSet.contains(key)) {
-                // no casing specified for key
-                return null;
-            }
-        }
         String envKey = prefix + javaPropertyToEnvVar(key);
         String value = System.getenv(envKey);
         return value;
@@ -62,7 +55,12 @@ class EnvironmentStore extends AbstractStore {
 
     @Override
     public void putAllToMap(Map<String, String> map) {
-        Map<String, String> casingByLowercase = casingSet.stream().collect(Collectors.toMap(String::toLowerCase, k -> k));
+        Map<String, List<String>> casingByLowercase = new LinkedHashMap<>();
+        for (String key : basePropertyKeys) {
+            String lowercaseKey = key.toLowerCase();
+            casingByLowercase.computeIfAbsent(lowercaseKey, k -> new LinkedList<>())
+                    .add(key);
+        }
         for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
             if (entry.getKey().startsWith(prefix)) {
                 String strippedEnvVarKey = entry.getKey().substring(prefix.length());
@@ -72,12 +70,10 @@ class EnvironmentStore extends AbstractStore {
                     }
                 }
                 String propKey = envVarToJavaProperty(strippedEnvVarKey);
-                String possiblyAliasedPropKey = casingByLowercase.getOrDefault(propKey, propKey);
-                if (basePropertyKeys.contains(possiblyAliasedPropKey)) {
-                    map.put(possiblyAliasedPropKey, entry.getValue());
-                } else {
-                    // not an override, filter out
-                }
+                List<String> aliasedPropKeys = casingByLowercase.getOrDefault(propKey, Collections.emptyList());
+                aliasedPropKeys.stream()
+                        .filter(basePropertyKeys::contains)
+                        .forEach(key -> map.put(key, entry.getValue()));
             }
         }
     }

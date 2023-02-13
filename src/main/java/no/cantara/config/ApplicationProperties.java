@@ -248,7 +248,15 @@ public interface ApplicationProperties {
 
         Builder enableEnvironmentVariablesWithoutEscaping();
 
-        Builder envVarCasing(String name);
+        /**
+         * @param name
+         * @return
+         * @deprecated this feature is now deprecated in favor of casing auto-detection. Calling this method does nothing.
+         */
+        @Deprecated
+        default Builder envVarCasing(String name) {
+            return this;
+        }
 
         Builder enableSystemProperties();
 

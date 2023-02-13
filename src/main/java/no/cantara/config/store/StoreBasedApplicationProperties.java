@@ -91,7 +91,6 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
     public static class Builder implements ApplicationProperties.Builder {
         final Deque<Store> storeList = new LinkedList<>();
         final Set<String> expectedApplicationProperties = new LinkedHashSet<>();
-        final Set<String> envVarCasingSet = new LinkedHashSet<>();
 
         private void validate(Map<String, String> properties) {
             if (expectedApplicationProperties.size() > 0) {
@@ -121,12 +120,6 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
                 }
 
             }
-        }
-
-        @Override
-        public ApplicationProperties.Builder envVarCasing(String name) {
-            envVarCasingSet.add(name);
-            return this;
         }
 
         @Override
@@ -173,7 +166,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         public ApplicationProperties.Builder enableEnvironmentVariables() {
             Set<String> basePropertyKeys = new LinkedHashSet<>(new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet());
             basePropertyKeys.addAll(expectedApplicationProperties);
-            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), "", true, envVarCasingSet));
+            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), "", true));
             return this;
         }
 
@@ -181,7 +174,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         public ApplicationProperties.Builder enableEnvironmentVariables(String prefix) {
             Set<String> basePropertyKeys = new LinkedHashSet<>(new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet());
             basePropertyKeys.addAll(expectedApplicationProperties);
-            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), prefix, true, envVarCasingSet));
+            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), prefix, true));
             return this;
         }
 
@@ -189,7 +182,7 @@ public class StoreBasedApplicationProperties implements ApplicationProperties {
         public ApplicationProperties.Builder enableEnvironmentVariablesWithoutEscaping() {
             Set<String> basePropertyKeys = new LinkedHashSet<>(new StoreBasedApplicationProperties(new LinkedList<>(storeList)).map().keySet());
             basePropertyKeys.addAll(expectedApplicationProperties);
-            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), "", false, envVarCasingSet));
+            storeList.addFirst(new EnvironmentStore(basePropertyKeys, new SourceConfigurationLocationException(1), "", false));
             return this;
         }
 

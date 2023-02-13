@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class EnvironmentVariableTest {
 
@@ -55,6 +56,49 @@ public class EnvironmentVariableTest {
     }
 
     @Test
+    public void envVarCasingTest() throws Exception {
+        {
+            // without environment override set
+            ApplicationProperties config = ApplicationProperties.builder()
+                    .property("I.am.CamelCased", "1")
+                    .property("I.AM.CamelCased", "2")
+                    .property("i.am.CamelCASed", "3")
+                    .enableEnvironmentVariables()
+                    .build();
+            String val1 = config.get("I.am.CamelCased");
+            String val2 = config.get("I.AM.CamelCased");
+            String val3 = config.get("i.am.CamelCASed");
+            String val4 = config.get("I.AM.CAMELCASED");
+            assertEquals("1", val1);
+            assertEquals("2", val2);
+            assertEquals("3", val3);
+            assertNull(val4);
+        }
+        {
+            // with environment override set
+            Map<String, String> envs = new LinkedHashMap<>();
+            envs.put("I_AM_CAMELCASED", "Set in env");
+            setEnv(envs);
+            assertEquals("Set in env", System.getenv("I_AM_CAMELCASED"));
+
+            ApplicationProperties config = ApplicationProperties.builder()
+                    .property("I.am.CamelCased", "1")
+                    .property("I.AM.CamelCased", "2")
+                    .property("i.am.CamelCASed", "3")
+                    .enableEnvironmentVariables()
+                    .build();
+            String val1 = config.get("I.am.CamelCased");
+            String val2 = config.get("I.AM.CamelCased");
+            String val3 = config.get("i.am.CamelCASed");
+            String val4 = config.get("I.AM.CAMELCASED");
+            assertEquals("Set in env", val1);
+            assertEquals("Set in env", val2);
+            assertEquals("Set in env", val3);
+            assertNull(val4);
+        }
+    }
+
+    @Test
     public void environmentCamelCaseTest() throws Exception {
         Map<String, String> envs = new LinkedHashMap<>();
         envs.put("IAMCAMELCASED", "Set in env");
@@ -62,22 +106,21 @@ public class EnvironmentVariableTest {
         assertEquals("Set in env", System.getenv("IAMCAMELCASED"));
 
         {
-            // env-var is always translated to property with lowercase key unless directed otherwise
+            // With lowecase property used - env-var is translated to all specified variants
             ApplicationProperties instance = ApplicationProperties.builder()
                     .defaults()
                     .build();
 
-            assertEquals(null, instance.get("IAMCAMELCASED"));
+            assertEquals(null, instance.get("IAMCAMELCASED")); // not an override (due to case mismatch)
             assertEquals(null, instance.get("iamcamelcased")); // not an override (due to case mismatch)
-            assertEquals("from application properties", instance.get("iAmCamelCased"));
+            assertEquals("Set in env", instance.get("iAmCamelCased"));
             System.out.printf("%s%n", instance.sourcesOf("iAmCamelCased"));
         }
 
         {
-            // With casing specified - env-var is translated only to the casing as specified
+            // With other casing specified - env-var is translated to all specified variants
             ApplicationProperties instance = ApplicationProperties.builder()
                     .defaults()
-                    .envVarCasing("iAmCamelCased")
                     .build();
 
             assertEquals(null, instance.get("IAMCAMELCASED"));
